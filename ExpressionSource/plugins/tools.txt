@@ -1,0 +1,183 @@
+#include "ExpressionSource/lib/eslib"
+
+if (first()) {
+    Apps["Tools",table]=table()
+    Apps["Tools",table]["name",string]="Tools"
+    Apps["Tools",table]["author",string]="CNBuilder"
+    Apps["Tools",table]["icon",table]=table()
+    Apps["Tools",table]["icon",table]:pushVector4(vec4(25,255,255,1))
+    Apps["Tools",table]["icon",table]:pushArray(array("box",vec2(0,0),vec2(64),"icon16/bullet_wrench.png",0,vec4(255,255,255,255)))
+}
+
+if (Ram["apps",table]) {
+    if (click("apps","Tools")&!fSApps()) {
+        if (!Ram["Tools",table]) {
+            newApp("Tools",30,1)
+            
+            local E = newEGP("Tools","main")
+            EGP:egpBox(E,vec2(256),vec2(400,300))
+            EGP:egpColor(E,vec(30))
+            
+            local E = newButton("Tools","close")
+            EGP:egpBox(E,vec2(440,120),vec2(25))
+            EGP:egpMaterial(E,"gui/html/stop")
+            
+            local E = newEGP("Tools")
+            EGP:egpBox(E,vec2(100,256),vec2(100,300))
+            EGP:egpColor(E,vec(35))
+            
+            local E = newButton("Tools","file")
+            EGP:egpBox(E,vec2(100,130),vec2(100,50))
+            EGP:egpColor(E,vec(35))
+            
+            local E = newEGP("Tools")
+            EGP:egpText(E,"文件管理",vec2(87,122))
+            EGP:egpSize(E,15)
+
+            local E = newEGP("Tools")
+            EGP:egpBox(E,vec2(69,130),vec2(25))
+            EGP:egpMaterial(E,"icon16/folder.png")
+            
+#[            local E = newButton("Tools","test")
+            EGP:egpBox(E,vec2(100,180),vec2(100,50))
+            EGP:egpColor(E,vec(35))
+            
+            local E = newEGP("Tools")
+            EGP:egpText(E,"Test",vec2(87,172))
+            EGP:egpSize(E,15)
+
+            local E = newEGP("Tools")
+            EGP:egpBox(E,vec2(69,180),vec2(25))]#
+            
+            newMenu("Tools","File")
+            
+            local E = newEGP("Tools")
+            EGP:egpText(E,"Music",vec2(160,122))
+            EGP:egpSize(E,15)
+            addEGP("Tools","File",E)
+            
+            local E = newEGP("Tools")
+            EGP:egpText(E,"从直链导入歌曲至文件管理器",vec2(215,158))
+            EGP:egpSize(E,15)
+            addEGP("Tools","File",E)
+            
+            local E = newButton("Tools","IURL")
+            EGP:egpBox(E,vec2(180,165),vec2(40,40))
+            EGP:egpMaterial(E,"icon16/dvd_link.png")
+            addEGP("Tools","File",E)
+            
+            local E = newEGP("Tools")
+            EGP:egpText(E,"Text",vec2(160,192))
+            EGP:egpSize(E,15)
+            addEGP("Tools","File",E)
+            
+            local E = newEGP("Tools")
+            EGP:egpText(E,"从直链导入文本至文件管理器",vec2(215,228))
+            EGP:egpSize(E,15)
+            addEGP("Tools","File",E)
+            
+            local E = newButton("Tools","IText")
+            EGP:egpBox(E,vec2(180,235),vec2(40,40))
+            EGP:egpMaterial(E,"icon16/page_white_link.png")
+            addEGP("Tools","File",E)
+            
+#[            newMenu("Tools","Test")
+            
+            local E = newEGP("Tools")
+            EGP:egpText(E,"Test",vec2(155,122))
+            EGP:egpSize(E,15)
+            addEGP("Tools","Test",E)]#
+            
+            hideMenus("Tools")
+            
+            timer("runTools",(Interval? Interval : 10))
+        } else {hideApp("Tools"),hidePop("Tools"),hideMenus("Tools")}
+    }
+}
+
+if (clk("runTools")) {
+    if (EGP:egpAlpha(egp("Tools","main"))>0) {timer("runTools",(Interval? Interval : 10))}
+    
+    if (click("Tools","close")) {hideApp("Tools"),hidePop("Tools"),hideMenus("Tools")}
+    if (click("Tools","file")) {hideMenus("Tools"),hideMenu("Tools","File")}
+    #if (click("Tools","test")) {hideMenus("Tools"),hideMenu("Tools","Test")}
+    
+    if (menuVisible("Tools","File")) {
+        if (click("Tools","IURL")) {
+            popIn("Tools","输入音乐链接")
+        }
+        if (click("Tools","IText")) {
+            popIn("Tools","输入文件直链")
+        }
+        
+        if (popVisible("Tools")) {
+            if (click("Tools","popyes")) {
+                hidePop("Tools")
+                
+                if (popTitle("Tools")=="输入音乐链接") {
+                    data("Tools","MURL",Keyboard["Text",string])
+                    
+                    popIn("Tools","请输入文件名")
+                }
+                
+                if (popTitle("Tools")=="输入文件直链") {
+                    data("Tools","IT",1)
+                    
+                    httpRequest(Keyboard["Text",string])
+                    
+                    popIn("Tools","正在下载")
+                }
+                
+                if (popTitle("Tools")=="请输入文件名") {
+                    if (dataString("Tools","MURL")) {
+                        Data = HardDrive["Memory",array]:clone()
+                                                
+                        local S = 
+                            toChar(0)+Keyboard["Text",string]+toChar(0)+
+                            toChar(1)+"umf"+toChar(1)+
+                            dataString("Tools","MURL")
+                            
+                        HardDrive:entity():createWire(entity(),"Data","Data")
+                        Data:pushString(S)
+                                        
+                        data("Tools","MURL","")
+                        
+                        timer("dhw",250)
+                    }
+                    
+                    if (dataString("Tools","TextData")) {
+                        Data = HardDrive["Memory",array]:clone()
+                                                
+                        local S = 
+                            toChar(0)+Keyboard["Text",string]+toChar(0)+
+                            toChar(1)+"txt"+toChar(1)+
+                            dataString("Tools","TextData")
+                            
+                        HardDrive:entity():createWire(entity(),"Data","Data")
+                        Data:pushString(S)
+                                        
+                        data("Tools","TextData","")
+                        
+                        timer("dhw",250)
+                    }
+                }
+            }
+            if (click("Tools","popno")) {hidePop("Tools")}
+            
+            if (changed(Keyboard["Text",string])) {popUpdateIn("Tools")}
+        }
+    }
+}
+
+if (httpClk()&httpSuccess()) {    
+    if (dataNumber("Tools","IT")&popTitle("Tools")=="正在下载") {
+        data("Tools","IT",0)
+        data("Tools","TextData",httpData())
+        
+        popIn("Tools","请输入文件名")
+    }
+}
+
+if (clk("dhw")) {HardDrive:entity():deleteWire("Data")}
+
+if (changed(EGP:egpAlpha(egp("Tools","main")))&EGP:egpAlpha(egp("Tools","main"))) {timer("runTools",(Interval? Interval : 10))}

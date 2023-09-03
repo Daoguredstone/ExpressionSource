@@ -1,0 +1,68 @@
+#include "ExpressionSource/lib/eslib"
+#include "ExpressionSource/lib/sharedfunction"
+##include "ExpressionSource/lib/terminalfunction"
+
+if (first()) {
+    function refreshTerminal() {
+        local A = dataArray("term","array")
+        
+        for (I=1,A:count()) {
+            EGP:egpSetText(egp("term","text"+I),A[I,string])
+        }
+    }
+}
+
+if (Ram["desktop",table]) {
+    if (click("desktop","term")) {
+        if (!Ram["term",table]) {
+            newApp("term",30,1)
+            
+            local E = newEGP("term","main")
+            EGP:egpBox(E,vec2(256),vec2(300))
+            EGP:egpColor(E,vec(30))
+            
+            local E = newEGP("term","title")
+            EGP:egpText(E,"Terminal : "+Profile["Account",table]["Name",string],vec2(115,110))
+            
+            for (I=1,18) {
+                local E = newEGP("term","text"+I)
+                EGP:egpText(E,"",vec2(115,108+(I*15+5)))
+            }
+            
+            data("term","array",array())
+            
+            timer("runTerm",(Interval? Interval : 10))
+        } else {hideApp("term")}
+    }
+}
+
+if (clk("runTerm")) {
+    if (EGP:egpAlpha(egp("term","main"))>0) {
+        timer("runTerm",(Interval? Interval : 10))
+        
+        if (changed(Keyboard["Text",string])&Keyboard["Text",string]) {
+            local A = dataArray("term","array")
+            
+            A:pushString(Keyboard["Text",string])
+            if (A:count()>18) {A:shift()}
+            
+            local S = Keyboard["Text",string]:explode(" ")[1,string]
+            local V = Keyboard["Text",string]:explode(" ")[2,string]
+            
+            switch (V[V:length()]) {
+                case "", break
+                case "::n", local V = Keyboard["Text",string]:explode(" ")[2,string]:toNumber() break
+            }
+                        
+            #ifdef S(V)
+                S(V)
+            #else 
+                A:pushString("Unknow Command")
+            #endif
+            
+            refreshTerminal()
+        }
+    }
+}
+
+if (changed(EGP:egpAlpha(egp("term","main")))&EGP:egpAlpha(egp("term","main"))>0) {timer("runTerm",(Interval? Interval : 10))}

@@ -1,0 +1,73 @@
+@persist VxSEGP:array [VxSLayers VxSHistroy]:table VxSReadOnly
+#include "ExpressionSource/lib/eslib"
+
+if (first()) {
+    Apps["vertexshop",table]=table()
+    Apps["vertexshop",table]["name",string]="VertexShop"
+    Apps["vertexshop",table]["author",string]="CNBuilder"
+    Apps["vertexshop",table]["icon",table]=table()
+    Apps["vertexshop",table]["icon",table]:pushVector4(vec4(50,50,50,1))
+    Apps["vertexshop",table]["icon",table]:pushArray(array("box",vec2(0,0),vec2(55),"icon16/shape_handles.png",0,vec4(255,255,255,255)))
+    Apps["vertexshop",table]["icon",table]:pushArray(array("text","V",vec2(0,-15),30,0,vec4(255,255,255,200),1))
+}
+
+if (Ram["apps",table]) {
+    if (click("apps","VertexShop")&!fSApps()) {
+        if (!Ram["VertexShop",table]) {
+            for (I=1,50) {VxSLayers[I,array]=array()}
+            
+            newApp("VertexShop",100,1)
+            
+            local E = newEGP("VertexShop")
+            EGP:egpBox(E,vec2(256,243),vec2(512,480))
+            EGP:egpColor(E,vec(50))
+            
+            local E = newEGP("VertexShop")
+            EGP:egpBox(E,vec2(256,15),vec2(512,30))
+            EGP:egpColor(E,vec(70))
+            
+            local E = newButton("VertexShop","close")
+            EGP:egpBox(E,vec2(495,15),vec2(25))
+            EGP:egpMaterial(E,"gui/html/stop")
+            
+            local E = newButton("VertexShop","new")
+            EGP:egpBox(E,vec2(20,15),vec2(25))
+            EGP:egpMaterial(E,"icon16/picture_add.png")
+            
+            local E = newButton("VertexShop","save")
+            EGP:egpBox(E,vec2(50,15),vec2(25))
+            EGP:egpMaterial(E,"icon16/picture_save.png")
+            
+            for (I=1,50) {VxSEGP[I,number]=newEGP("VertexShop")}
+        }
+        else {hideApp("VertexShop")}
+    }
+    
+    if (Ram["VertexShop",table]) {
+        if (EGP:egpAlpha(newButton("VertexShop","close"))>0){
+            if (click("VertexShop","close")) {hideApp("VertexShop")}
+            if (click("VertexShop","new")) {
+                VxSLayers:clear()
+                for (I=1,50) {VxSLayers[I,array]=array()}
+                
+                for (I=1,VxSEGP:count()) {EGP:egpRemove(VxSEGP[I,number])}
+            }
+            
+            if (click("VertexShop","save")) {   
+                local A = HardDrive["Memory",array]:clone()
+                A:pushString("-Vertex-=vtx="+vonEncode(VxSLayers[1,array]))
+                HardDrive["Data",array]=A
+            }
+            
+            if (!VxSReadOnly) {
+                if (owner():keyAttack2()&owner():aimEntity()==EGP:entity()) {
+                    if (changed(EGP:egpCursor(owner()))) {
+                        VxSLayers[1,array]:pushVector2(vec2(int(EGP:egpCursor(owner()):x()),int(EGP:egpCursor(owner()):y())))
+                    }
+                }
+                
+                for (I=1,VxSLayers:count()) {EGP:egpLineStrip(VxSEGP[I,number],VxSLayers[I,array])}
+            }
+        }
+    }
+}

@@ -1,0 +1,67 @@
+@persist HL3Text
+#include "ExpressionSource/lib/eslib"
+
+if (first()) {
+    Apps["halflife3",table]=table()
+    Apps["halflife3",table]["name",string]="HalfLife3"
+    Apps["halflife3",table]["author",string]="CNBuilder"
+    Apps["halflife3",table]["icon",table]=table()
+    Apps["halflife3",table]["icon",table]:pushVector4(vec4(255,255,255,1))
+    Apps["halflife3",table]["icon",table]:pushArray(array("box",vec2(0,0),vec2(50),"vgui/ui_logo",0,vec4(255,150,0,255)))
+}
+
+if (Ram["apps",table]) {
+    if (click("apps","HalfLife3")&!fSApps()) {
+        if (!Ram["HalfLife3",table]) {
+            StreamRadio["Play",number]=0
+
+            newApp("HalfLife3",5)
+            
+            soundPlay(0,0,"music/hl1_song11.mp3")
+            
+            local E = newEGP("HalfLife3")
+            EGP:egpBox(E,vec2(256,257),vec2(200,300))
+            EGP:egpColor(E,vec(30))
+            
+            local E = newEGP("HalfLife3")
+            EGP:egpBox(E,vec2(256,210),vec2(180))
+            EGP:egpMaterial(E,"vgui/appchooser/hl2")
+            
+            local E = newEGP("HalfLife3")
+            EGP:egpText(E,"Half-Life 3",vec2(256,300))
+            EGP:egpAlign(E,1)
+            EGP:egpSize(E,40)
+            
+            local E = newEGP("HalfLife3")
+            EGP:egpBox(E,vec2(256,368),vec2(130,35))
+            EGP:egpColor(E,vec4(255,150,0,100))
+            
+            HL3Text = newEGP("HalfLife3")
+            EGP:egpText(HL3Text,"Loading",vec2(256,350))
+            EGP:egpAlign(HL3Text,1)
+            EGP:egpSize(HL3Text,30)
+            EGP:egpColor(HL3Text,vec4(255,150,0,255))
+            
+            timer("rickroll",4000)
+        }
+        else {
+            hideApp("HalfLife3")
+            
+            if (EGP:egpAlpha(HL3Text)>1) {
+                soundPlay(0,0,"music/hl1_song11.mp3")
+                EGP:egpSetText(HL3Text,"Loading")
+                StreamRadio["Play",number]=0
+                timer("rickroll",4000)
+            }
+        }
+    }
+    
+    if (clk("rickroll")) {
+        soundStop(0,1)
+        
+        playUrl("http://music.163.com/song/media/outer/url?id=5221167")
+        
+        EGP:egpSetText(HL3Text,"Rolling")
+    }
+}
+

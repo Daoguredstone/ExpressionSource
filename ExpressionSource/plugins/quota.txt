@@ -1,0 +1,18 @@
+@persist
+#include "ExpressionSource/lib/eslib"
+
+if (first()) {
+    Apps["quota",table]=table()
+    Apps["quota",table]["name",string]="quota"
+    Apps["quota",table]["author",string]="CNBuilder"
+    Apps["quota",table]["icon",table]=table()
+    Apps["quota",table]["icon",table]:pushVector4(vec4(100,50,50,255))
+    Apps["quota",table]["icon",table]:pushArray(array("box",vec2(0,0),vec2(40),"expression 2/cog_world",0,vec4(255,0,0,255)))
+}
+
+if (Ram["apps",table]) {
+    if (click("apps","quota")&!fSApps()) {
+        if (!Ram["quota",table]) {
+        }
+    }
+}

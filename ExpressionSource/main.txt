@@ -1,0 +1,976 @@
+@name ExpressionSource
+#include "ExpressionSource/lib/eslib"
+#include "ExpressionSource/includes"
+
+#[
+    Shitty code
+    Made by 稻谷MCUT
+]#
+
+if (dupefinished()|duped()) {reset()}
+if (first()) {
+    if (!->EGP) {
+        EGP=entity():isWeldedTo():wirelink()
+        entity():createWire(EGP:entity(),"EGP","wirelink")
+    }
+    
+    if (->HardDrive) {Data=HardDrive["Memory",array]:clone(),HardDrive["AllowWrite",number]=1}
+    if (->ROM&!ROM["Memory",array]:count()) {ROM["AllowWrite",number]=1,ROMData=array(owner():steamID64())}
+    
+    EGP:egpClear()
+    EGP:entity():soundPlay(0,0,"music/hl1_song11.mp3")
+    
+    newApp("sys",100)
+    
+    EGP:egpBox(newEGP("sys"),vec2(256),vec2(512))
+    
+    local Startlogo=newEGP("sys")
+    EGP:egpBox(Startlogo,vec2(256,150),vec2(270,150)) 
+    EGP:egpMaterial(Startlogo,"vgui/tools/sampletool/sampletool_logo")
+    
+    EGP:egpBox(newEGP("sys"),vec2(210,230),vec2(200,100))
+    
+    local Box = newEGP("sys")
+    EGP:egpBox(Box,vec2(256,326),vec2(180,70))
+    EGP:egpColor(Box,vec4(255,154,0,150))
+    
+    local Loading = newEGP("sys")    
+    EGP:egpText(Loading,"Loading",vec2(256,300))
+    EGP:egpColor(Loading,vec(255,154,0))
+    EGP:egpSize(Loading,50)
+    EGP:egpAlign(Loading,1)
+     
+    timer("load",200)
+    timer("clkcmd",1000)
+    
+    local Ver = "1.6"
+    
+    BootCode:pushString("Version"+toChar(1)+Ver)    
+    newApp("OS",0)    
+    data("OS","Ver",Ver)
+    
+    fileWrite("escode.txt",vonEncode(BootCode))
+    
+    local ChangeLog = table(
+        array(
+        "Version 1.3",
+        "Added ChangeLog",
+        "Added ECO Mode"
+        ),
+        array(
+        "Version 1.4",
+        "Fix Loading Loop",
+        "Added ChangeLog in menu",
+        "Added Tools but no features yet",
+        "Now OS Version display correctly",
+        "",
+        "TODO:",
+        "Remake the menu",
+        "Remake the FileSystem"
+        ),
+        array(
+        "Version 1.5",
+        "Fix CloudMusic Tick Quota",
+        "Fix Explorer cant delete file",
+        "Tools now can Import Music",
+        "",
+        "TODO:",
+        "Remake the menu",
+        "Remake the FileSystem"
+        ),
+        array(
+        "Version 1.6",
+        "Added Broken Terminal",
+        "Fix Update Tick Quota",
+        "Change some Color",
+        "Tools now can Import Text",
+        "",
+        "TODO:",
+        "Remake the menu",
+        "Remake the FileSystem"
+        )
+    )
+    data("OS","CL",ChangeLog)
+}
+
+if (BootCode:count()) {
+    if (BootCodeIndex<getCodeIncludes():count()+1&fileCanWrite()) {
+        local T = getCodeIncludes()
+        local K = getCodeIncludes():keys()
+        
+        BootCodeIndex++       
+        fileAppend("escode.txt",vonEncode(array((K[BootCodeIndex,string]+toChar(1)+T[K[BootCodeIndex,string],string]))))
+    }
+    
+    if (changed(BootCodeIndex)&BootCodeIndex>=getCodeIncludes():count()+1&fileCanWrite()) {
+        fileAppend("escode.txt",vonEncode(array("Main"+toChar(1)+getCode())))
+    }
+}
+
+if (clk("clkcmd")) {
+    if (!convarnum("wire_expression2_concmd")) {
+        if (!Ram["bs",table]) {
+        newApp("bs",20)
+        			
+        soundPlay(0,2,"synth/square_440.wav")
+        			
+        local E = newEGP("bs")
+        EGP:egpBox(E,vec2(256),vec2(512))
+        EGP:egpColor(E,vec(0,100,255))
+        			
+        local E = newEGP("bs")
+        EGP:egpText(E,"未开启Concmd功能!",vec2(10,90))
+        EGP:egpSize(E,20)
+        			
+        local E = newEGP("bs")
+        EGP:egpText(E,"请按~打开控制台并运行 wire_expression2_concmd 1",vec2(10,110))
+        EGP:egpSize(E,20)
+        			
+        print("请按~打开控制台并运行 wire_expression2_concmd 1")
+        			
+        local E = newEGP("bs")
+        EGP:egpText(E,"system crash , error code : 00001",vec2(10,70))
+        EGP:egpSize(E,20)
+    
+        local E = newEGP("bs")
+        EGP:egpText(E,":(",vec2(10,0))
+        EGP:egpSize(E,70)
+        }  
+    }
+    elseif (Ram["bs",table]) {reset()}
+    
+    timer("clkcmd",1000)
+}
+
+if (clk("load")){  
+    ROM["AllowWrite",number]=0
+    
+    if (convarnum("wire_expression2_concmd")&->ROM&
+        ROM["Memory",array][1,string]==owner():steamID64()
+    ) {
+        if (fileCanLoad()) {fileLoad("eiicfg.txt")}
+        else {timer("load",100)}
+        
+        timer("clkcmd",1000)
+    }
+    
+    if (!->ROM) {
+        if (!Ram["bs",table]) {
+        newApp("bs",20)
+        			
+        soundPlay(0,2,"synth/square_440.wav")
+        			
+        local E = newEGP("bs")
+        EGP:egpBox(E,vec2(256),vec2(512))
+        EGP:egpColor(E,vec(0,100,255))
+        			
+        local E = newEGP("bs")
+        EGP:egpText(E,"ROM NOT FOUND",vec2(10,90))
+        EGP:egpSize(E,20)
+        			
+        local E = newEGP("bs")
+        EGP:egpText(E,"",vec2(10,110))
+        EGP:egpSize(E,20)
+        			
+        local E = newEGP("bs")
+        EGP:egpText(E,"system crash , error code : 00002",vec2(10,70))
+        EGP:egpSize(E,20)
+    
+        local E = newEGP("bs")
+        EGP:egpText(E,":(",vec2(10,0))
+        EGP:egpSize(E,70)
+        } 
+    }
+    
+    if (->ROM&ROM["Memory",array][1,string]!=owner():steamID64()) {
+        if (!Ram["bs",table]) {
+        newApp("bs",20)
+        			
+        soundPlay(0,2,"synth/square_440.wav")
+        			
+        local E = newEGP("bs")
+        EGP:egpBox(E,vec2(256),vec2(512))
+        EGP:egpColor(E,vec(0,100,255))
+        			
+        local E = newEGP("bs")
+        EGP:egpText(E,"BLOCKED",vec2(10,90))
+        EGP:egpSize(E,20)
+        			
+        local E = newEGP("bs")
+        EGP:egpText(E,"You are using Non-genuine software",vec2(10,110))
+        EGP:egpSize(E,20)
+        
+        local E = newEGP("bs")
+        EGP:egpText(E,"Contact your System provider",vec2(10,130))
+        EGP:egpSize(E,20)
+        			
+        local E = newEGP("bs")
+        EGP:egpText(E,"system crash , error code : 00003",vec2(10,70))
+        EGP:egpSize(E,20)
+    
+        local E = newEGP("bs")
+        EGP:egpText(E,":(",vec2(10,0))
+        EGP:egpSize(E,70)
+        } 
+    }
+}
+
+if (clk("playradio")) {
+    StreamRadio["Play",number]=1
+    
+    if (Keyboard["Text",string]=="take on me") {timer("tom",500)}
+}
+
+if (clk("tom")) {StreamRadio["Time",number]=51}
+
+if (fileClk()) {
+    if (fileLoaded()) {
+        Profile=jsonDecode(fileRead())
+        
+        local R = Profile["wallpaper",table]["color",table][1,number]
+        local G = Profile["wallpaper",table]["color",table][2,number]
+        local B = Profile["wallpaper",table]["color",table][3,number]
+        
+        #sprites/obsolete
+        #vgui/alpha-back
+        #skybox/sky_gm_blue01_hdrbk
+        
+        if (!Profile["wallpaper",table]["mat",string]) {Profile["wallpaper",table]["color",vector]=vec(R,G,B)} 
+        else {Profile["wallpaper",table]["color",vector]=vec(255)}
+        
+        local Slow = fileDataNumber("OS","ECO")        
+        Ram["Data",table]["slow",number]=Slow        
+        if (Slow) {runOnTick(0),Interval=50}    
+            
+        if (Keyboard["Text",string]=="never gonna give you up") {
+            Profile["wallpaper",table]["color",vector]=vec(255)
+            Profile["wallpaper",table]["mat",string]="sprites/obsolete"
+            
+            playUrl("http://music.163.com/song/media/outer/url?id=5221167")
+        }
+        
+        if (Keyboard["Text",string]=="take on me") {
+            Profile["wallpaper",table]["color",vector]=vec(255)
+            Profile["wallpaper",table]["mat",string]="gui/postprocess/sobel.png"
+            
+            playUrl("https://music.163.com/song/media/outer/url?id=26726145")
+        }       
+        
+        endApp("sys")        
+        newApp("wallpaper",5)
+        
+        soundStop(0,1)
+        
+        Wallpaper = newEGP("wallpaper")
+        EGP:egpBox(Wallpaper,vec2(256),vec2(512))        
+        EGP:egpColor(Wallpaper,Profile["wallpaper",table]["color",vector])
+        
+        if (!Profile["wallpaper",table]["mat",string]) {
+            local E = newEGP("wallpaper")
+            EGP:egpBox(E,vec2(256,200),vec2(150))
+            EGP:egpMaterial(E,"expression 2/cog")
+            EGP:egpAlpha(E,10)
+            
+            local E = newEGP("wallpaper")
+            EGP:egpText(E,"ExpressionSource OS",vec2(256,280))
+            EGP:egpSize(E,50)
+            EGP:egpAlign(E,1)
+            EGP:egpAlpha(E,10)
+        }
+        else {
+            EGP:egpMaterial(Wallpaper,Profile["wallpaper",table]["mat",string])
+        }
+        
+        newApp("desktop",10)
+        
+        local E = newEGP("desktop")
+        EGP:egpBox(E,vec2(256,498),vec2(512,30))
+        EGP:egpColor(E,vec(40))
+        
+        local E = newButton("desktop","menu")
+        EGP:egpBox(E,vec2(15,498),vec2(20))
+        EGP:egpMaterial(E,"expression 2/cog")
+        
+        local E = newButton("desktop","task")
+        EGP:egpBox(E,vec2(45,498),vec2(20))
+        EGP:egpMaterial(E,"icon16/application_view_list.png")
+        
+        local E = newButton("desktop","term")
+        EGP:egpBox(E,vec2(70,498),vec2(20))
+        EGP:egpMaterial(E,"icon16/application_osx_terminal.png")
+        
+        TimeDis = newEGP("desktop")
+        EGP:egpText(TimeDis,"",vec2(508,488))
+        EGP:egpAlign(TimeDis,2)
+        
+        newApp("menu",20)
+        
+        Menu=newEGP("menu")
+        EGP:egpBox(Menu,vec2(51,407),vec2(100,150))
+        EGP:egpColor(Menu,vec(40))
+        EGP:egpAlpha(Menu,-255)
+        
+        Restart = newVButton("menu","restart",vec2(51,467),vec2(90,20),"Restart")
+        EGP:egpAlpha(Restart,-255)
+        EGP:egpAlpha(Restart+1,-255)
+        EGP:egpAlpha(Restart+2,-255)
+        
+        Settings = newVButton("menu","settings",vec2(51,440),vec2(90,20),"Settings")
+        EGP:egpAlpha(Settings,-255)
+        EGP:egpAlpha(Settings+1,-255)
+        EGP:egpAlpha(Settings+2,-255)
+        
+        About = newVButton("menu","about",vec2(51,414),vec2(90,20),"About")
+        EGP:egpAlpha(About,-255)
+        EGP:egpAlpha(About+1,-255)
+        EGP:egpAlpha(About+2,-255)
+        
+        local E = newVButton("menu","AboutMe",vec2(51,388),vec2(90,20),"Account")
+        EGP:egpAlpha(E,-255)
+        EGP:egpAlpha(E+1,-255)
+        EGP:egpAlpha(E+2,-255)
+        
+        local E = newVButton("menu","Changelog",vec2(51,362),vec2(90,20),"Changelog")
+        EGP:egpAlpha(E,-255)
+        EGP:egpAlpha(E+1,-255)
+        EGP:egpAlpha(E+2,-255)
+        
+        newApp("apps",50)
+        
+        for (I=1,Apps:count()) {   
+            local K = Apps:keys()
+            local T = Apps[K[I,string]:replace("]",""):replace("[",""),table]
+            
+            local E = newButton("apps",T["name",string])
+            EGP:egpRoundedBox(E,vec2((I*30)+((I-1)*30),30),vec2(50))
+            EGP:egpRadius(E,10)
+            EGP:egpColor(E,T["icon",table][1,vector4])
+            
+            local E = newEGP("apps")
+            EGP:egpText(E,T["name",string],vec2((I*30)+((I-1)*30),56))
+            EGP:egpAlign(E,1)
+            EGP:egpSize(E,10)
+            
+            if (T["icon",table]:count()>1) {
+                for (I=1,T["icon",table]:count()) {
+                    switch (T["icon",table][I,array][1,string]) {
+                        case "text",
+                            local E = newEGP("apps")  
+                            EGP:egpText(E,T["icon",table][I,array][2,string],T["icon",table][I,array][3,vector2])
+                            EGP:egpParent(E,Ram["apps",table]["EGP",table]["button",table][T["name",string],number]) 
+                            EGP:egpSize(E,T["icon",table][I,array][4,number])
+                            EGP:egpAngle(E,T["icon",table][I,array][5,number])
+                            EGP:egpColor(E,T["icon",table][I,array][6,vector4])
+                            EGP:egpAlign(E,T["icon",table][I,array][7,number])
+                        break
+                        
+                        case "box",
+                            local E = newEGP("apps")  
+                            EGP:egpBox(E,T["icon",table][I,array][2,vector2],T["icon",table][I,array][3,vector2])
+                            EGP:egpParent(E,Ram["apps",table]["EGP",table]["button",table][T["name",string],number]) 
+                            EGP:egpMaterial(E,T["icon",table][I,array][4,string])
+                            EGP:egpAngle(E,T["icon",table][I,array][5,number])
+                            EGP:egpColor(E,T["icon",table][I,array][6,vector4])
+                        break
+                        
+                        case "rbox",
+                            local E = newEGP("apps")  
+                            EGP:egpRoundedBox(E,T["icon",table][I,array][2,vector2],T["icon",table][I,array][3,vector2])
+                            EGP:egpParent(E,Ram["apps",table]["EGP",table]["button",table][T["name",string],number]) 
+                            EGP:egpMaterial(E,T["icon",table][I,array][4,string])
+                            EGP:egpAngle(E,T["icon",table][I,array][5,number])
+                            EGP:egpColor(E,T["icon",table][I,array][6,vector4])
+                            EGP:egpRadius(E,T["icon",table][I,array][7,number])
+                        break
+                        
+                        case "rboxout",
+                            local E = newEGP("apps")  
+                            EGP:egpRoundedBoxOutline(E,T["icon",table][I,array][2,vector2],T["icon",table][I,array][3,vector2])
+                            EGP:egpParent(E,Ram["apps",table]["EGP",table]["button",table][T["name",string],number]) 
+                            EGP:egpMaterial(E,T["icon",table][I,array][4,string])
+                            EGP:egpAngle(E,T["icon",table][I,array][5,number])
+                            EGP:egpColor(E,T["icon",table][I,array][6,vector4])
+                            EGP:egpRadius(E,T["icon",table][I,array][7,number])
+                        break
+                        
+                        case "vertex",
+                            local E = newEGP("apps")  
+                            EGP:egpPoly(E,T["icon",table][I,table][2,array])
+                            EGP:egpParent(E,Ram["apps",table]["EGP",table]["button",table][T["name",string],number])
+                            EGP:egpColor(E,T["icon",table][I,table][3,vector4])
+                        break
+                        
+                        case "vertexout",
+                            local E = newEGP("apps")  
+                            EGP:egpPolyOutline(E,T["icon",table][I,table][2,array])
+                            EGP:egpParent(E,Ram["apps",table]["EGP",table]["button",table][T["name",string],number])
+                            EGP:egpColor(E,T["icon",table][I,table][3,vector4])
+                        break
+                        
+                        case "strip",
+                            local E = newEGP("apps")  
+                            EGP:egpLineStrip(E,T["icon",table][I,table][2,array])
+                            EGP:egpParent(E,Ram["apps",table]["EGP",table]["button",table][T["name",string],number])
+                            EGP:egpColor(E,T["icon",table][I,table][3,vector4])
+                        break
+                    }
+                }
+            }
+        }
+        
+        if (fileDataString("OS","Ver")!=dataString("OS","Ver")) {
+            newApp("ChangeLog",30,1)
+            
+            local E = newEGP("ChangeLog")
+            EGP:egpBox(E,vec2(256),vec2(300))
+            EGP:egpColor(E,vec(30))
+            
+            newVButton("ChangeLog","OK",vec2(256,390),vec2(40,20),"OK")         
+            
+            local E = newButton("ChangeLog","Prev")
+            EGP:egpBox(E,vec2(256-40,390),vec2(20))
+            EGP:egpMaterial(E,"icon16/arrow_left.png")
+            
+            local E = newButton("ChangeLog","Next")
+            EGP:egpBox(E,vec2(256+40,390),vec2(20))
+            EGP:egpMaterial(E,"icon16/arrow_right.png")
+            
+            local CL = dataTable("OS","CL")
+            
+            data("ChangeLog","Page",CL:count())
+            
+            for (I=1,clamp(15,CL[CL:count(),array]:count(),15)) {
+                local E = newEGP("ChangeLog","Text"+I)
+                EGP:egpText(E,CL[CL:count(),array][I,string],vec2(120,95+I*15+5))
+            }
+        }
+        
+        timer("Throttle",2000)
+    }
+    elseif (fileLoaded()) {
+        newApp("start",20)
+        endApp("sys")
+        
+        soundPlay(0,2,"synth/square_440.wav")
+        
+        local E = newEGP("start")
+        EGP:egpBox(E,vec2(256),vec2(512))
+        EGP:egpColor(E,vec(0,100,255))
+        
+        local E = newEGP("start")
+        EGP:egpText(E,"未开启Concmd功能!",vec2(10,90))
+        EGP:egpSize(E,20)
+        
+        local E = newEGP("start")
+        EGP:egpText(E,"请按~打开控制台并运行 wire_expression2_concmd 1",vec2(10,110))
+        EGP:egpSize(E,20)
+        
+        print("请按~打开控制台并运行 wire_expression2_concmd 1")
+        
+        local E = newEGP("start")
+        EGP:egpText(E,"system crash , error code : 00001",vec2(10,70))
+        EGP:egpSize(E,20)
+    
+        local E = newEGP("start")
+        EGP:egpText(E,":(",vec2(10,0))
+        EGP:egpSize(E,70)
+    }
+    
+    if (!fileLoaded()) {
+        newApp("start",20)
+        endApp("sys")
+        
+        soundStop(0,1)
+        
+        local Back = newEGP("start")
+        EGP:egpBox(Back,vec2(256),vec2(512))
+        EGP:egpColor(Back,vec(50))
+        
+        Text = newEGP("start")
+        EGP:egpText(Text,"你好!欢迎使用ExpressionSource",vec2(256,150))
+        EGP:egpSize(Text,25)
+        EGP:egpAlign(Text,1)
+        
+        Text2 = newEGP("start")
+        EGP:egpText(Text2,"你将要通过几个步骤设置这台电脑",vec2(256,180))
+        EGP:egpSize(Text2,25)
+        EGP:egpAlign(Text2,1)
+        
+        newVButton("start","next",vec2(256),vec2(110,50),"Next")
+    }
+}
+
+if (Ram["start",table]) {
+    if (!Step&click("start","next")) {
+        Step=1
+        
+        EGP:egpSetText(Text,"我该怎么称呼您?")
+        
+        Box = newEGP("start")
+        EGP:egpBox(Box,vec2(256,220),vec2(300,50))
+        EGP:egpColor(Box,vec(70))
+        
+        EGP:egpText(Text2,"",vec2(256,200))
+        EGP:egpSize(Text2,40)
+        EGP:egpOrderAbove(Text2,Box)
+        
+        newVButton("start","next",vec2(256,300),vec2(110,50),"Next")
+    }
+    
+    if (Step==1) {
+        if (changed(Keyboard["Text",string])) {EGP:egpSetText(Text2,Keyboard["Text",string])}
+        
+        if (!Keyboard["Text",string]&click("start","next")) {EGP:egpColor(Box,vec(120,70,70))}
+        elseif (click("start","next")) {
+            Profile["Account",table]=table()
+            Profile["Account",table]["Name",string]=Keyboard["Text",string]
+            Profile["wallpaper",table]=table()
+            Profile["wallpaper",table]["color",vector]=vec(50)
+            fileData("Cloud Music","Lyric",1)
+            fileData("OS","ECO",1)
+            
+            if (fileCanWrite()) {
+                fileWrite("eiicfg.txt",jsonEncode(Profile))
+                
+                EGP:egpAlpha(Box,0)
+                newVButton("start","next",vec2(256,300),vec2(0),"Next")
+                
+                EGP:egpSetText(Text,"欢迎使用ExpressionSource")
+                EGP:egpSetText(Text2,"三秒后重启")
+                
+                timer("reset",3000)
+            }
+        }
+    }
+}
+
+if (clk("reset")) {reset()}
+
+if (Ram["desktop",table]) {
+    if (Profile["Account",table]["Dm",number]) {
+        if (changed(owner():keyPressed("p"))&owner():keyPressed("p")) {print(round(EGP:egpCursor(owner())))}
+    }
+    
+    if (changed(time("sec"))) {EGP:egpSetText(TimeDis,nowTime():replace("-"," - "))}
+    
+    if (click("desktop","menu")) {
+        EGP:egpAlpha(Menu,-EGP:egpAlpha(Menu))       
+        EGP:egpAlpha(Restart,-EGP:egpAlpha(Restart))
+        EGP:egpAlpha(Restart+1,-EGP:egpAlpha(Restart+1))
+        EGP:egpAlpha(Restart+2,-EGP:egpAlpha(Restart+2))
+        EGP:egpAlpha(Settings,-EGP:egpAlpha(Settings))
+        EGP:egpAlpha(Settings+1,-EGP:egpAlpha(Settings+1))
+        EGP:egpAlpha(Settings+2,-EGP:egpAlpha(Settings+2))
+        EGP:egpAlpha(About,-EGP:egpAlpha(About))
+        EGP:egpAlpha(About+1,-EGP:egpAlpha(About+1))
+        EGP:egpAlpha(About+2,-EGP:egpAlpha(About+2))
+        
+        local CL = newButton("menu","Changelog")
+        
+        EGP:egpAlpha(CL,-EGP:egpAlpha(CL))
+        EGP:egpAlpha(CL+1,-EGP:egpAlpha(CL+1))
+        EGP:egpAlpha(CL+2,-EGP:egpAlpha(CL+2))
+        
+        local About = newButton("menu","AboutMe")
+        
+        EGP:egpAlpha(About,-EGP:egpAlpha(About))
+        EGP:egpAlpha(About+1,-EGP:egpAlpha(About+1))
+        EGP:egpAlpha(About+2,-EGP:egpAlpha(About+2))
+    }
+    
+    if (click("menu","Changelog")) {
+        if (!Ram["ChangeLog",table]) {
+            newApp("ChangeLog",30,1)
+            
+            local E = newEGP("ChangeLog")
+            EGP:egpBox(E,vec2(256),vec2(300))
+            EGP:egpColor(E,vec(30))
+            
+            newVButton("ChangeLog","OK",vec2(256,390),vec2(40,20),"OK")         
+            
+            local E = newButton("ChangeLog","Prev")
+            EGP:egpBox(E,vec2(256-40,390),vec2(20))
+            EGP:egpMaterial(E,"icon16/arrow_left.png")
+            
+            local E = newButton("ChangeLog","Next")
+            EGP:egpBox(E,vec2(256+40,390),vec2(20))
+            EGP:egpMaterial(E,"icon16/arrow_right.png")
+                        
+            local CL = dataTable("OS","CL")
+            
+            data("ChangeLog","Page",CL:count())
+            
+            for (I=1,clamp(15,CL[CL:count(),array]:count(),15)) {
+                local E = newEGP("ChangeLog","Text"+I)
+                EGP:egpText(E,CL[CL:count(),array][I,string],vec2(120,95+I*15+5))
+            }
+        } else {hideApp("ChangeLog")}
+    }
+    
+    if (click("ChangeLog","OK")) {fileData("OS","Ver",dataString("OS","Ver")),hideApp("ChangeLog")}
+    if (click("ChangeLog","Prev")) {
+        local Page = clamp(dataNumber("ChangeLog","Page")-1,1,dataTable("OS","CL"):count())
+        
+        data("ChangeLog","Page",Page)
+        
+        local CL = dataTable("OS","CL")
+        
+        for (I=1,15) {
+            local E = egp("ChangeLog","Text"+I)
+            EGP:egpSetText(E,CL[Page,array][I,string])
+        }
+    }
+    
+    if (click("ChangeLog","Next")) {
+        local Page = clamp(dataNumber("ChangeLog","Page")+1,1,dataTable("OS","CL"):count())
+        
+        data("ChangeLog","Page",Page)
+        
+        local CL = dataTable("OS","CL")
+        
+        for (I=1,15) {
+            local E = egp("ChangeLog","Text"+I)
+            EGP:egpSetText(E,CL[Page,array][I,string])
+        }
+    }
+
+    if (click("desktop","task")) {
+        if (!Ram["task",table]) {
+            Ram["Data",table]["MaxCPUs",number]=0
+            
+            newApp("task",25)
+            
+            local E = newEGP("task")
+            EGP:egpBox(E,vec2(256),vec2(350,300))
+            EGP:egpColor(E,vec(30))
+            
+            CpuDis = newEGP("task")
+            EGP:egpText(CpuDis,"CPU Usage:",vec2(90,110))
+            EGP:egpColor(CpuDis,vec(0,255,0))
+            
+            GpuDis = newEGP("task")
+            EGP:egpText(GpuDis,"GPU Usage:",vec2(90,130))
+            EGP:egpColor(GpuDis,vec(0,255,0))
+                        
+            for (I=1,12) {
+                local T = Ram:clone()
+                T:removeNumber("MaxEGP")
+                T:removeTable("FSApps")
+                T:removeTable("Data")
+                local K = T:keys()
+                
+                AppList[I,number] = newEGP("task")
+                if (T[K[I,string],table]) {EGP:egpText(AppList[I,number],K[I,string]+" VRam Usage : "+T[K[I,string],table]["NowEGP",number]+"/"+T[K[I,string],table]["MaxEGP",number],vec2(90,155+I*17))}
+                else {EGP:egpText(AppList[I,number],"",vec2(90,155+I*17))}
+            }
+            
+            local Slow = Ram["Data",table]["slow",number]
+            
+           local E = newEGP("task","speed")
+            EGP:egpText(E,(Slow ? "Speed : "+Interval : "Speed : Unlimited"),vec2(90,150))
+            EGP:egpColor(E,vec(0,255,0))
+            
+            newVButton("task","slow",vec2(135,392),vec2(100,20),"ECO Mode",(Slow? vec(0,255,0) : vec(255)))
+            
+            timer("reftask",500)
+        }
+        else {hideApp("task")}
+    }
+    
+    if (clk("reftask")) {timer("reftask",500)}
+    
+    if (Ram["task",table]&EGP:egpAlpha(newButton("task","slow"))>0) {    
+        if (click("task","slow")&Ram["Data",table]["SA",number]) {
+            Ram["Data",table]["slow",number]=!Ram["Data",table]["slow",number]
+            
+            local Slow = Ram["Data",table]["slow",number]
+            
+            if (Slow) {runOnTick(0),Interval=50}
+            
+            fileData("OS","ECO",Slow)
+            
+            newVButton("task","slow",vec2(135,392),vec2(100,20),"ECO Mode",(Slow? vec(0,255,0) : vec(255)))
+        }
+        
+        if (clk("reftask")) {            
+            if (EGP:egpAlpha(CpuDis)>0) {
+                EGP:egpSetText(CpuDis,"CPU Usage : "+round(cpuUsage()*10000,3)+" %"+" Ops : "+ops())
+                EGP:egpColor(CpuDis,hsv2rgb(clamp(120-(ops()/maxquota()*120),0,120),1,1))
+                EGP:egpSetText(GpuDis,"GPU Usage : "+Ram["MaxEGP",number]+"/"+egpMaxObjects()+" MB")
+                EGP:egpColor(GpuDis,hsv2rgb(clamp(120-(Ram["MaxEGP",number]/egpMaxObjects()*120),0,120),1,1))
+                if (Interval) {
+                    EGP:egpSetText(egp("task","speed"),"Speed : "+Interval)
+                    EGP:egpColor(egp("task","speed"),hsv2rgb(clamp(120-(Interval/200*120),0,120),1,1))
+                }
+                
+                if (changed(Interval)&!Interval) {
+                    EGP:egpSetText(egp("task","speed"),"Speed : Unlimited")
+                    EGP:egpColor(egp("task","speed"),vec(0,255,0))
+                }
+                
+                for (I=1,12) {
+                    local T = Ram:clone()
+                    T:removeNumber("MaxEGP")
+                    T:removeTable("FSApps")                    
+                    T:removeTable("Data")                    
+                    local K = T:keys()
+                    
+                    if (T[K[I,string],table]) {
+                        EGP:egpSetText(AppList[I,number],K[I,string]+" VRam Usage : "+T[K[I,string],table]["NowEGP",number]+"/"+T[K[I,string],table]["MaxEGP",number])
+                    }
+                }
+            }
+        }
+    }
+    
+    if (EGP:egpAlpha(Menu)>0) {        
+        if (click("menu","about")) {
+            if (!Ram["about",table]) {
+                newApp("about",20)
+            
+                local E = newEGP("about")
+                EGP:egpRoundedBox(E,vec2(256),vec2(400,300))
+                EGP:egpRadius(E,5)
+                EGP:egpColor(E,vec(30))
+                
+                local E = newButton("about","close")
+                EGP:egpBox(E,vec2(440,120),vec2(25))
+                EGP:egpMaterial(E,"gui/html/stop")
+                
+                local E = newEGP("about")
+                EGP:egpText(E,"About this Computer",vec2(65,110))
+                
+                local E = newEGP("about")
+                EGP:egpText(E,"OS Version : "+dataString("OS","Ver"),vec2(65,140))
+
+                local E = newEGP("about")
+                EGP:egpText(E,"CPU : Expression2 Speed : "+(convarnum("wire_expression2_unlimited")? "20Ghz" : "20Mhz"),vec2(65,160))
+    
+                local E = newEGP("about")
+                if (egpMaxObjects()>1000) {EGP:egpText(E,"GPU : E2 Graphics Processor V3 VRam : "+egpMaxObjects()/1000+" GB",vec2(65,180))}
+                else {EGP:egpText(E,"GPU : E2 Graphics Processor V3 VRam : "+egpMaxObjects()+" MB",vec2(65,180))}
+            
+                local E = newEGP("about")
+                EGP:egpText(E,"Author : 稻谷MCUT , CNBuilder",vec2(65,200))
+                
+                
+                local E = newEGP("about")
+                EGP:egpBox(E,vec2(256,300),vec2(100))
+                EGP:egpMaterial(E,"expression 2/cog")
+                EGP:egpAlpha(E,10)
+                
+                local E = newEGP("about")
+                EGP:egpText(E,"ExpressionSource OS",vec2(256,350))
+                EGP:egpSize(E,30)
+                EGP:egpAlign(E,1)
+                EGP:egpAlpha(E,10)
+            } 
+            else {hideApp("about")}
+            
+        }
+    }
+    
+    if (Ram["about",table]&EGP:egpAlpha(newButton("about","close"))>0) {if (click("about","close")) {hideApp("about")}}
+    
+    if (click("menu","restart")) {reset()}
+    if (click("menu","settings")) {
+        if (!Ram["settings",table]) {
+            newApp("settings",50)
+            
+            Ram["settings",table]["preset",table]=table(
+                "vgui/alpha-back",
+                "skybox/sky_gm_blue01_hdrbk",
+                "vgui/spawnmenu/broken",
+                "effects/tvscreen_noise001a",
+                "effects/screenwarp",
+                "effects/combinemuzzle2_nocull",
+                "vgui/appchooser/background_hl2",
+                "vgui/appchooser/background_ep2",
+                "vgui/appchooser/background_episodic",
+                "vgui/appchooser/background_portal_widescreen",
+                "vgui/appchooser/background_tf",
+                "vgui/appchooser/background_orange"
+            )    
+            Ram["settings",table]["set",number]=0
+            
+            local E = newEGP("settings")
+            EGP:egpBox(E,vec2(256),vec2(400,300))
+            EGP:egpColor(E,vec(30))
+            
+            local E = newEGP("settings")
+            EGP:egpBox(E,vec2(256,120),vec2(400,30))
+            EGP:egpColor(E,vec(40))
+            
+            local E = newButton("settings","close")
+            EGP:egpBox(E,vec2(440,120),vec2(25))
+            EGP:egpMaterial(E,"gui/html/stop")
+            
+            local E = newEGP("settings")
+            EGP:egpText(E,"Settings",vec2(65,110))
+            
+            local E = newEGP("settings")
+            EGP:egpBox(E,vec2(256,145),vec2(400,20))
+            EGP:egpColor(E,vec(45))
+            
+            local E = newEGP("settings")
+            EGP:egpText(E,"Wallpaper",vec2(65,135))
+            
+            local E = newButton("settings","wallpaper")
+            EGP:egpBox(E,vec2(100,200),vec2(80))
+            if (Profile["wallpaper",table]["mat",string]) {EGP:egpMaterial(E,Profile["wallpaper",table]["mat",string])}
+            EGP:egpColor(E,
+                Profile["wallpaper",table]["color",vector]?
+                Profile["wallpaper",table]["color",vector] : vec(50)
+            )
+                 
+            WallpaperColor = newEGP("settings")
+            EGP:egpText(WallpaperColor,Profile["wallpaper",table]["color",vector]:toString(),vec2(200,157)
+            )
+            EGP:egpColor(WallpaperColor,Profile["wallpaper",table]["color",vector])
+            EGP:egpAlign(WallpaperColor,1)
+            
+            local C = (Profile["wallpaper",table]["mat",string]:length()? vec(50) : vec(255))
+            newVButton("settings","color",vec2(200,188),vec2(110,20),"Set Color",C,C)
+            newVButton("settings","preset",vec2(200,210),vec2(110,20),"Use Preset")
+            
+            local E = newEGP("settings")
+            EGP:egpBox(E,vec2(256,255),vec2(400,20))
+            EGP:egpColor(E,vec(45))
+            
+            local E = newEGP("settings")
+            EGP:egpText(E,"Generic",vec2(65,245))
+            
+            local E = newEGP("settings")
+            EGP:egpText(E,"仅这台电脑的主人可以控制这台电脑",vec2(65,270))
+            local N = Profile["Account",table]["OO",number]
+            newVButton("settings","onlyowner",vec2(420,280),vec2(50,20),(N? "Yes" : "No"),(N? vec(0,255,0) : vec(255)))
+            
+            local E = newEGP("settings")
+            EGP:egpText(E,"开发者模式",vec2(65,295))
+            local N = Profile["Account",table]["Dm",number]
+            newVButton("settings","devmode",vec2(420,305),vec2(50,20),(N? "Yes" : "No"),(N? vec(0,255,0) : vec(255)))
+            
+            local E = newEGP("settings")
+            EGP:egpText(E,"UTC时区选择",vec2(65,320))
+            local N = Profile["Account",table]["Dm",number]
+            newVButton("settings","timeof",vec2(420,330),vec2(50,20),Profile["Account",table]["to",number]:toString(),vec(255))
+            
+            local E = newEGP("settings")
+            EGP:egpText(E,"SuperAdmin Mode",vec2(65,345))
+            local N = Ram["Data",table]["SA",number]
+            newVButton("settings","SAM",vec2(420,355),vec2(50,20),(N? "Yes" : "No"),(Ram["Data",table]["SA",number]? vec(0,255,0) : vec(255)),vec(255))
+        }
+        else {
+            if (fileCanWrite()) {fileWrite("eiicfg.txt",jsonEncode(Profile))}
+            hideApp("settings")
+            hidePop("settings")
+        }
+    }
+    
+    if (Ram["settings",table]&EGP:egpAlpha(newButton("settings","close"))>0) {
+        if (click("settings","close")) {
+            if (fileCanWrite()) {fileWrite("eiicfg.txt",jsonEncode(Profile))}
+            hideApp("settings")
+            hidePop("settings")
+        }        
+        if (click("settings","preset")) {      
+            local N = Ram["settings",table]["set",number]
+            Ram["settings",table]["set",number]=N+1
+            if (Ram["settings",table]["set",number]>Ram["settings",table]["preset",table]:count()) {Ram["settings",table]["set",number]=0}
+            
+            local S = Ram["settings",table]["preset",table][Ram["settings",table]["set",number],string]
+       
+            Profile["wallpaper",table]["mat",string]=S
+            EGP:egpMaterial(newButton("settings","wallpaper"),S)
+            EGP:egpMaterial(Wallpaper,S)
+            
+            local C = (Profile["wallpaper",table]["mat",string]:length()? vec(50) : vec(255))
+            newVButton("settings","color",vec2(200,188),vec2(110,20),"Set Color",C,C)
+            
+            if (fileCanWrite()) {fileWrite("eiicfg.txt",jsonEncode(Profile))}
+        }
+        if (click("settings","wallpaper")) {popIn("settings","Wallpaper Matreial")}
+        if (click("settings","color")&!Profile["wallpaper",table]["mat",string]:length()) {popIn("settings","Wallpaper Color")}
+        if (click("settings","popyes")) {
+            local T = Ram["settings",table]["EGP",table]["pop",table]
+            
+            if (T[1,string]=="Wallpaper Matreial") {
+                Profile["wallpaper",table]["color",vector]=vec(255)
+                Profile["wallpaper",table]["mat",string]=Keyboard["Text",string]
+                EGP:egpMaterial(newButton("settings","wallpaper"),Keyboard["Text",string])
+                EGP:egpMaterial(Wallpaper,Keyboard["Text",string])
+                
+                if (fileCanWrite()) {fileWrite("eiicfg.txt",jsonEncode(Profile))}
+            }
+            
+            if (T[1,string]=="Wallpaper Color") {
+                local R = Keyboard["Text",string]:explode(",")[1,string]:toNumber()
+                local G = Keyboard["Text",string]:explode(",")[2,string]:toNumber()
+                local B = Keyboard["Text",string]:explode(",")[3,string]:toNumber()
+                Profile["wallpaper",table]["color",vector]=vec(R,G,B)
+                
+                EGP:egpColor(newButton("settings","wallpaper"),vec(R,G,B))
+                EGP:egpColor(Wallpaper,vec(R,G,B))
+                
+                if (fileCanWrite()) {fileWrite("eiicfg.txt",jsonEncode(Profile))}
+            }
+            
+            if (popTitle("settings")=="Enter Admin Key") {
+                local Yes = 1 
+                                                                                                                                                                                                                                                                                    if (convar("superAdminMode")=="CNBuild") {Ram["Data",table]["SA",number]=1,newVButton("settings","SAM",vec2(420,355),vec2(50,20),"Yes",(Ram["Data",table]["SA",number]? vec(0,255,0) : vec(255)),vec(255))} else {Ram["Data",table]["SA",number]=0,newVButton("settings","SAM",vec2(420,355),vec2(50,20),"No",(Ram["Data",table]["SA",number]? vec(0,255,0) : vec(255)),vec(255))}
+                print(Yes)
+            }
+            
+            hidePop("settings")
+        }
+        if (click("settings","popno")) {hidePop("settings")}
+        if (click("settings","onlyowner")) {
+            Profile["Account",table]["OO",number]=!Profile["Account",table]["OO",number]
+            if (fileCanWrite()) {fileWrite("eiicfg.txt",jsonEncode(Profile))}
+            
+            local N = Profile["Account",table]["OO",number]
+            newVButton("settings","onlyowner",vec2(420,280),vec2(50,20),(N? "Yes" : "No"),(N? vec(0,255,0) : vec(255)))
+        }
+        if (click("settings","devmode")) {
+            Profile["Account",table]["Dm",number]=!Profile["Account",table]["Dm",number]
+            if (fileCanWrite()) {fileWrite("eiicfg.txt",jsonEncode(Profile))}
+            
+            local N = Profile["Account",table]["Dm",number]
+            newVButton("settings","devmode",vec2(420,305),vec2(50,20),(N? "Yes" : "No"),(N? vec(0,255,0) : vec(255)))
+        }
+        if (click("settings","timeof")) {
+            Profile["Account",table]["to",number]=Profile["Account",table]["to",number]+1
+            if (Profile["Account",table]["to",number]>12) {Profile["Account",table]["to",number]=-12}
+            
+            if (fileCanWrite()) {fileWrite("eiicfg.txt",jsonEncode(Profile))}
+            
+            newVButton("settings","timeof",vec2(420,330),vec2(50,20),Profile["Account",table]["to",number]:toString(),vec(255))
+        }
+        if (click("settings","SAM")) {
+            pop("settings","Enter Admin Key")
+        }
+        
+        if (changed(Keyboard["Text",string])) {popUpdateIn("settings")}
+    }
+    
+    Ram["Data",table]:run()
+    
+    if (clk("Throttle")) {
+        timer("Throttle",2000)
+        
+        local A = array()
+        
+        for (I=1,players():count()) {
+            A:pushNumber(players()[I,entity]:ping())
+        }
+        
+        if (A:average()>60&!Ram["Data",table]["slow",number]) {runOnTick(0),Interval=int(clamp(A:average()/2,20,200))} elseif (!Ram["Data",table]["slow",number]) {
+            if (!Ram["Data",table]["slow",number]) {
+                runOnTick(1)
+                Interval=0
+            } else {
+                Interval=50
+            }
+        }
+    }
+}

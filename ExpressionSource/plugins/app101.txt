@@ -1,0 +1,42 @@
+#include "ExpressionSource/lib/eslib"
+
+if (first()) {
+    #App data
+    Apps["101",table]=table()
+    Apps["101",table]["name",string]="App101" #App name 
+    Apps["101",table]["author",string]="CNBuilder" #App author
+    
+    #App icon data 
+    Apps["101",table]["icon",table]=table()
+    Apps["101",table]["icon",table]:pushVector4(vec4(255,255,255,255)) #Color
+}
+
+if (Ram["apps",table]) {
+                          #FullScreen Apps
+    if (click("apps","App101")&!fSApps()) {
+    #                 ^^^^^^ Must be the same as app name
+    
+        if (!Ram["App101",table]) {
+            newApp("App101",10)
+            #               ^^ Max EGP this App can use
+            #                  Use newApp([App Name],[Max EGP],[FullScreen]) to create fullscreen app
+            
+            #Claim a EGP            
+            #Use local E = newEGP([App name],[Name]) to name a EGP
+            #Then you can use egp([App name],[Name]) to get EGP ID            
+            local E = newEGP("App101")
+            #                 ^^^^^^ Same as App name
+        
+            #Create a box
+            EGP:egpBox(E,vec2(256),vec2(100))
+            
+            local E = newEGP("App101","RGB")
+            EGP:egpBox(E,vec2(256),vec2(70))
+        }
+        else {hideApp("App101")} #if app exist then hide it
+    }
+}
+
+if (Ram["App101",table]) {
+    EGP:egpColor(egp("App101","RGB"),hsv2rgb((curtime()*10)%360,1,1))
+}

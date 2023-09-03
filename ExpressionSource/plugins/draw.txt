@@ -1,0 +1,68 @@
+#include "ExpressionSource/lib/eslib"
+
+if (first()) {
+    Apps["Draw",table]=table()
+    Apps["Draw",table]["name",string]="Draw"
+    Apps["Draw",table]["author",string]="CNBuilder"
+    Apps["Draw",table]["icon",table]=table()
+    Apps["Draw",table]["icon",table]:pushVector4(vec4(100,100,100,1))
+    Apps["Draw",table]["icon",table]:pushArray(array("box",vec2(0,0),vec2(45),"icon16/image_edit.png",0,vec4(255,255,255,255)))
+    
+    function callDraw() {
+        if (!Ram["Draw",table]) {
+            newApp("Draw",50,1)
+            
+            local E = newEGP("Draw","BackGround")
+            EGP:egpBox(E,vec2(256),vec2(400,300))
+            EGP:egpColor(E,vec(30))
+            
+            local E = newEGP("Draw","Body")
+            EGP:egpBox(E,vec2(256)+vec2(-50,0),vec2(260))
+            EGP:egpColor(E,vec(40))
+            
+            for (I=1,10) {local E = newEGP("Draw","Layer"+I),EGP:egpBox(E,vec2(1000),vec2(1))}
+            
+            timer("clkDrawRunning",100)
+            
+            data("Draw","Layer",table())
+            
+            local T = table()            
+            T["Color",vector]=vec(0)            
+            data("Draw","Settings",T)
+            
+            data("Draw","LayerNow",1)
+            
+            dataTable("Draw","Layer"):pushArray(array())
+        } else {hideApp("Draw"),hidePop("Draw")}
+    }
+}
+
+if (clk("clkDrawRunning")) {
+    timer("clkDrawRunning",100)
+    
+    if (EGP:egpAlpha(egp("Draw","BackGround"))>0) {
+        timer("DrawClk",1)
+    }
+}
+
+if (Ram["apps",table]) {
+    if (click("apps","Draw")&!fSApps()) {
+        callDraw()
+    }
+}
+
+if (clk("DrawClk")) {
+    if (owner():keyAttack2()&owner():aimEntity()==EGP:entity()) {
+        local Pos = vec2(floor(toLocal(vec(vec2(256)+vec2(-50,0)),ang(0),vec(EGP:egpCursor(owner())),ang(0))/2))
+        local T = dataTable("Draw","Layer")
+        local N = dataNumber("Draw","LayerNow")
+        
+        if (T[N,array]&Pos:x()<=64&Pos:y()<=64) {
+            T[N,array][(Pos:x():toString()+Pos:y():toString()):toNumber(),vector2] = Pos
+            T[N,array][(Pos:x():toString()+Pos:y():toString()):toNumber(),vector2] = Pos+vec2(0,40)
+            
+            EGP:egpLineStrip(egp("Draw","Layer1"),T[N,array])
+            EGP:egpParent(egp("Draw","Layer1"),egp("Draw","Body"))
+        }
+    }
+}

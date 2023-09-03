@@ -1,0 +1,353 @@
+@persist CMText CPG CMPage CMPlayButton CMProg
+@persist CMData:table CMAData:table CMEGP:array
+#include "ExpressionSource/lib/eslib"
+#include "ExpressionSource/lib/cloudmusic_lyric"
+
+if (first()) {
+    Apps["cloudmusic",table]=table()
+    Apps["cloudmusic",table]["name",string]="Cloud Music"
+    Apps["cloudmusic",table]["author",string]="CNBuilder"
+    Apps["cloudmusic",table]["icon",table]=table()
+    Apps["cloudmusic",table]["icon",table]:pushVector4(vec4(255,0,0,255))
+    Apps["cloudmusic",table]["icon",table]:pushArray(array("text","@",vec2(0,28),50,180,vec4(255,255,255,255),1))
+    
+    function callCloudMusic() {
+        if (!Ram["Cloud Music",table]) {
+            newApp("Cloud Music",80)
+            
+            local E = newEGP("Cloud Music")
+            EGP:egpBox(E,vec2(256,256),vec2(500,400))
+            EGP:egpColor(E,vec(30))
+            
+            local E = newEGP("Cloud Music")
+            EGP:egpRoundedBox(E,vec2(256,70),vec2(500,30))
+            EGP:egpRadius(E,5)
+            EGP:egpColor(E,vec(255,0,0))
+            
+            local E = newEGP("Cloud Music")
+            EGP:egpText(E,"Cloud Music",vec2(10,55))
+            EGP:egpSize(E,30)
+            
+            local E = newButton("Cloud Music","close")
+            EGP:egpBox(E,vec2(490,70),vec2(25))
+            EGP:egpMaterial(E,"gui/html/stop")
+            
+            local E = newEGP("Cloud Music")
+            EGP:egpRoundedBox(E,vec2(110,105),vec2(200,30))
+            EGP:egpRadius(E,5)
+            EGP:egpColor(E,vec(40))
+            
+            CMText = newEGP("Cloud Music")
+            EGP:egpText(CMText,"?",vec2(15,91))
+            EGP:egpSize(CMText,25)
+            
+            local E = newEGP("Cloud Music","Name")
+            EGP:egpText(E,"",vec2(170,60))
+            EGP:egpSize(E,20)
+            
+            CMPlayButton = newButton("Cloud Music","play")
+            EGP:egpBox(CMPlayButton,vec2(490,105),vec2(30))
+            EGP:egpMaterial(CMPlayButton,"icon16/control_play.png")
+            
+            local E = newEGP("Cloud Music")
+            EGP:egpLine(E,vec2(310,105),vec2(470,105))
+            EGP:egpSize(E,5)
+            EGP:egpColor(E,vec(70))
+            
+            CMProg = newEGP("Cloud Music")
+            EGP:egpLine(CMProg,vec2(310,105),vec2(470,105))
+            EGP:egpColor(CMProg,vec(255,0,0))
+            EGP:egpSize(CMProg,5)
+            
+            newVButton("Cloud Music","search",vec2(260,105),vec2(90,30),"Search",vec(5),vec(255))
+            
+            if (CMEGP:count()<=0) {
+                for (I=1,12) {
+                    CMEGP[I,number] = newButton("Cloud Music","Song"+I)
+                    EGP:egpBox(CMEGP[I,number],vec2(256,118+I*25),vec2(500,25))
+                    
+                    if (I==1|I==3|I==5|I==7|I==9|I==11) {EGP:egpColor(CMEGP[I,number],vec(35))} else {EGP:egpColor(CMEGP[I,number],vec(30))}
+                    
+                    CMEGP[I+12,number] = newEGP("Cloud Music")
+                    EGP:egpText(CMEGP[I+12,number],"",vec2(10,108+I*25))
+                }
+                
+                local E = newEGP("Cloud Music")
+                EGP:egpBox(E,vec2(256,130),vec2(500,1))
+                EGP:egpColor(E,vec(50))
+                
+                local E = newEGP("Cloud Music")
+                EGP:egpBox(E,vec2(256,150+40*7),vec2(500,1))
+                EGP:egpColor(E,vec(50))
+                
+                local E = newButton("Cloud Music","prevPage")
+                EGP:egpBox(E,vec2(256-30,442),vec2(25))
+                EGP:egpMaterial(E,"gui/html/back")
+    
+                local E = newButton("Cloud Music","nextPage")
+                EGP:egpBox(E,vec2(256+30,442),vec2(25))
+                EGP:egpMaterial(E,"gui/html/forward")
+                
+                CMPage = newEGP("Cloud Music")
+                EGP:egpText(CMPage,CPG+1+"/"+(floor(CMData:count()/11)),vec2(256,433))
+                EGP:egpAlign(CMPage,1)
+            }
+            
+            local E = newButton("Cloud Music","settings")
+            EGP:egpBox(E,vec2(20,442),vec2(20))
+            EGP:egpMaterial(E,"expression 2/cog")
+            
+            local E = newButton("Cloud Music","list")
+            EGP:egpBox(E,vec2(50,442),vec2(25))
+            EGP:egpMaterial(E,"icon16/text_padding_right.png")
+            
+            local E = newEGP("Cloud Music","SongCount")
+            EGP:egpText(E,(
+                dataArray("Cloud Music","SongList") ? 
+                dataArray("Cloud Music","SongList"):count():toString() :
+                "0"
+            ),vec2(70,433))
+            
+            local A = array()           
+            
+            local E = newEGP("Cloud Music")
+            EGP:egpBox(E,vec2(256),vec2(500,340))
+            EGP:egpColor(E,vec(30))            
+            A:pushNumber(E)  
+            
+            for (I=1,12) {
+                local E = newEGP("Cloud Music")
+                EGP:egpBox(E,vec2(256,118+I*25),vec2(500,25))
+                if (I==1|I==3|I==5|I==7|I==9|I==11) {
+                    EGP:egpColor(E,vec(30))
+                    } else {
+                    EGP:egpColor(E,vec(35))
+                }
+                A:pushNumber(E) 
+                
+                local E = newEGP("Cloud Music","ListText"+I)
+                EGP:egpText(E,"",vec2(10,108+I*25))
+                    
+                A:pushNumber(E) 
+            }
+            
+            for (I=1,A:count()) {                 
+                EGP:egpAlpha(A[I,number],-EGP:egpAlpha(A[I,number]))
+            }
+                      
+            data("Cloud Music","ListEGP",A)
+            
+            local A = array()           
+            
+            local E = newEGP("Cloud Music")
+            EGP:egpBox(E,vec2(256),vec2(500,340))
+            EGP:egpColor(E,vec(30))            
+            A:pushNumber(E)  
+            
+            local E = newVButton("Cloud Music","lyric",vec2(55,105),vec2(90,30),"Lyric",
+                (fileDataNumber("Cloud Music","Lyric")? vec(0,255,0) : vec(5)),
+            vec(255),25,-2)      
+            
+            A:pushNumber(E)
+            A:pushNumber(E+1)
+            A:pushNumber(E+2)
+
+            for (I=1,A:count()) {                 
+                EGP:egpAlpha(A[I,number],-EGP:egpAlpha(A[I,number]))
+            }
+                      
+            data("Cloud Music","SettingEGP",A)
+            
+            newApp("Cloud Music SubTitle",3)
+            
+            local E = newEGP("Cloud Music SubTitle","Lycc")
+            EGP:egpText(E,"",vec2(256,395))
+            EGP:egpAlign(E,1)
+            EGP:egpSize(E,30)
+            
+            local E = newEGP("Cloud Music SubTitle","Lyc")
+            EGP:egpText(E,"",vec2(256,430))
+            EGP:egpAlign(E,1)
+            EGP:egpSize(E,20)
+            
+            data("Cloud Music","SongList",array())
+            data("Cloud Music","SongListName","")
+            data("Cloud Music","searched",1)
+        }
+        else {
+            hideApp("Cloud Music")
+            
+            local A = dataArray("Cloud Music","ListEGP")
+            
+            for (I=1,A:count()) {                 
+                EGP:egpAlpha(A[I,number],-255)
+            }
+            
+            local A = dataArray("Cloud Music","SettingEGP")
+            
+            for (I=1,A:count()) {                 
+                EGP:egpAlpha(A[I,number],-255)
+            }
+        }
+    }
+}
+
+if (Ram["apps",table]) {
+    if (click("apps","Cloud Music")&!fSApps()) {
+        callCloudMusic()
+    }
+    
+    if (Ram["Cloud Music",table]&EGP:egpAlpha(CMText>0)) {
+        if (click("Cloud Music","close")) {callCloudMusic()}
+        if (click("Cloud Music","search")&!dataNumber("Cloud Music","searched")) {
+            if (Keyboard["Text",string]) {
+                data("Cloud Music","searched",1)
+                
+                newVButton("Cloud Music","search",vec2(260,105),vec2(90,30),"Search",vec(5),vec(255))
+                
+                if (httpCanRequest()) {
+                    CPG=0
+                    CMData:clear()
+                    CMAData:clear()
+                    httpRequest("http://music.163.com/api/search/pc?s="+httpUrlEncode(Keyboard["Text",string])+"&offset=0&limit=100&type=1")
+                }   
+                else {timer("CMRetry",250)}
+            }
+        }
+        
+        if (changed(Keyboard["Text",string])&Keyboard["Text",string]) {
+            data("Cloud Music","searched",0)
+            
+            newVButton("Cloud Music","search",vec2(260,105),vec2(90,30),"Search",vec(0,255,0),vec(255))
+        }
+        
+        if (clk("CMRetry")) {
+            if (httpCanRequest()) {
+                CPG=0
+                CMData:clear()
+                CMAData:clear()
+                httpRequest("http://music.163.com/api/search/pc?s="+httpUrlEncode(Keyboard["Text",string])+"&offset=0&limit=100&type=1")
+            }   
+            else {timer("CMRetry",250)}
+        }
+        
+        if ((httpClk()&httpData())|(changed(CPG)&httpData())) {
+            if (!CMData|!CMAData){
+                CMData=httpData():gmatch("\"name\":\"([^\"]+)\",\"id\":(%d+),\"position\"") 
+        
+                CMAData=httpData():gmatch("\"artists\":(%b[]),\"album\"")
+            }
+
+            for (I=1,12) {
+                EGP:egpSetText(CMEGP[I+12,number],CMData[I+CPG*12,array][1,string]+" - "+CMAData[I+CPG*12,array][1,string]:gmatch("\"name\":(%b\"\")")[1,array][1,string]:replace("\"",""))
+            }
+            
+            EGP:egpSetText(CMPage,CPG+1+"/"+(floor(CMData:count()/11)))
+        }
+        
+        if (click("Cloud Music","nextPage")&CPG<floor(CMData:count()/11)-1) {CPG=CPG+1}
+        if (click("Cloud Music","prevPage")&CPG>0) {CPG=CPG-1}
+        
+        if (->StreamRadio) {            
+            if (EGP["User",entity]) {
+                if (click("Cloud Music","Song1")) {local S="http://music.163.com/song/media/outer/url?id="+CMData[1+CPG*12,array][2,string],lyric(S:explode("=")[2,string]:replace(".mp3","")),playUrl(S)}
+                if (click("Cloud Music","Song2")) {local S="http://music.163.com/song/media/outer/url?id="+CMData[2+CPG*12,array][2,string],lyric(S:explode("=")[2,string]:replace(".mp3","")),playUrl(S)}
+                if (click("Cloud Music","Song3")) {local S="http://music.163.com/song/media/outer/url?id="+CMData[3+CPG*12,array][2,string],lyric(S:explode("=")[2,string]:replace(".mp3","")),playUrl(S)}
+                if (click("Cloud Music","Song4")) {local S="http://music.163.com/song/media/outer/url?id="+CMData[4+CPG*12,array][2,string],lyric(S:explode("=")[2,string]:replace(".mp3","")),playUrl(S)}
+                if (click("Cloud Music","Song5")) {local S="http://music.163.com/song/media/outer/url?id="+CMData[5+CPG*12,array][2,string],lyric(S:explode("=")[2,string]:replace(".mp3","")),playUrl(S)}
+                if (click("Cloud Music","Song6")) {local S="http://music.163.com/song/media/outer/url?id="+CMData[6+CPG*12,array][2,string],lyric(S:explode("=")[2,string]:replace(".mp3","")),playUrl(S)}
+                if (click("Cloud Music","Song7")) {local S="http://music.163.com/song/media/outer/url?id="+CMData[7+CPG*12,array][2,string],lyric(S:explode("=")[2,string]:replace(".mp3","")),playUrl(S)}
+                if (click("Cloud Music","Song8")) {local S="http://music.163.com/song/media/outer/url?id="+CMData[8+CPG*12,array][2,string],lyric(S:explode("=")[2,string]:replace(".mp3","")),playUrl(S)}
+                if (click("Cloud Music","Song9")) {local S="http://music.163.com/song/media/outer/url?id="+CMData[9+CPG*12,array][2,string],lyric(S:explode("=")[2,string]:replace(".mp3","")),playUrl(S)}
+                if (click("Cloud Music","Song10")) {local S="http://music.163.com/song/media/outer/url?id="+CMData[10+CPG*12,array][2,string],lyric(S:explode("=")[2,string]:replace(".mp3","")),playUrl(S)}
+                if (click("Cloud Music","Song11")) {local S="http://music.163.com/song/media/outer/url?id="+CMData[11+CPG*12,array][2,string],lyric(S:explode("=")[2,string]:replace(".mp3","")),playUrl(S)}
+                if (click("Cloud Music","Song12")) {local S="http://music.163.com/song/media/outer/url?id="+CMData[12+CPG*12,array][2,string],lyric(S:explode("=")[2,string]:replace(".mp3","")),playUrl(S)}
+            }
+            
+            if (click("Cloud Music","play")) {
+                EGP:egpMaterial(CMPlayButton,StreamRadio["Paused",number]? "icon16/control_play.png" : "icon16/control_pause.png")
+                StreamRadio["Pause",number]=(StreamRadio["Paused",number]? 0 : 1)
+            }
+            
+            if (StreamRadio["Play",number]&changed((160*(StreamRadio["Time",number]/StreamRadio["Length",number])))) {
+                EGP:egpLine(CMProg,vec2(310,105),vec2(310+(160*(StreamRadio["Time",number]/StreamRadio["Length",number])),105))
+            }
+        }
+        
+        if (changed(Keyboard["Text",string])) {
+            local R = Keyboard["Text",string]:toUnicodeByte(1,clamp(Keyboard["Text",string]:unicodeLength(),1,14))
+            EGP:egpSetText(CMText,toUnicodeChar(R))
+        }
+        
+        if (click("Cloud Music","list")) {
+            local A = dataArray("Cloud Music","ListEGP")
+            
+            for (I=1,A:count()) {                 
+                EGP:egpAlpha(A[I,number],-EGP:egpAlpha(A[I,number]))
+            }
+            
+            local L = dataArray("Cloud Music","SongList")
+            
+            for (I=1,clamp(L:count(),0,12)) {
+                EGP:egpSetText(egp("Cloud Music","ListText"+I),uniSub(L[I,string]:replace(";"," - "),1,46)+"...")
+            }
+        }
+        
+        if (click("Cloud Music","settings")) {
+            local A = dataArray("Cloud Music","SettingEGP")
+            
+            for (I=1,A:count()) {                 
+                EGP:egpAlpha(A[I,number],-EGP:egpAlpha(A[I,number]))
+            }
+        }
+        
+        if (EGP:egpAlpha(dataArray("Cloud Music","SettingEGP")[1,number])>0) {
+            if (click("Cloud Music","lyric")) {
+                fileData("Cloud Music","Lyric",!fileDataNumber("Cloud Music","Lyric"))
+                    
+                newVButton("Cloud Music","lyric",vec2(55,105),vec2(90,30),"Lyric",
+                    (fileDataNumber("Cloud Music","Lyric")? vec(0,255,0) : vec(35)),
+                vec(255),25,-2) 
+                
+                if (fileDataNumber("Cloud Music","Lyric")) {lyric(StreamRadio["Stream URL",string]:explode("=")[2,string]:replace(".mp3",""))}
+            }
+        }
+    }
+    
+    if (Ram["Cloud Music",table]&dataArray("Cloud Music","SongList")) {
+        if (changed(StreamRadio["Time",number])&StreamRadio["Time",number]>=StreamRadio["Length",number]-1&!dataNumber("Cloud Music","delay")) {
+            local AR = dataArray("Cloud Music","SongList")
+            local S = AR[randint(1,AR:count()),string]
+            local R = S:explode(";")[1,string]:toUnicodeByte(1,clamp(S:explode(";")[1,string]:unicodeLength(),1,25))
+            
+            StreamRadio["Time",number]=0
+            StreamRadio["Play",number]=0
+            StreamRadio["Stream URL",string]=S:explode(";")[2,string]
+            
+            lyric(S:explode(";")[2,string]:explode("=")[2,string]:replace(".mp3",""))
+            
+            EGP:egpSetText(egp("Cloud Music","Name"),dataString("Cloud Music","SongListName")+" : "+toUnicodeChar(R))
+            
+            timer("playradio",200)
+            timer("cndelay",500)
+            
+            data("Cloud Music","delay",1)
+        }
+        
+        if (changed(dataString("Cloud Music","SongListName"))) {
+            EGP:egpSetText(egp("Cloud Music","SongCount"),dataArray("Cloud Music","SongList"):count():toString()) 
+        }
+        
+        if (clk("cndelay")) {data("Cloud Music","delay",0)}
+    }
+    
+    if (EGP:egpAlpha(egp("Cloud Music SubTitle","Lycc"))>0) {
+        if (changed(getLyric())) {          
+            local S = getLyric():explode(toChar(1))
+            
+            EGP:egpSetText(egp("Cloud Music SubTitle","Lycc"),S[2,string])
+            EGP:egpSetText(egp("Cloud Music SubTitle","Lyc"),S[1,string])
+        }
+    }
+}
+

@@ -1,0 +1,62 @@
+@persist NotepadLine:array [NoteFileData NoteFileName NoteFileType]:string NoteSilde 
+#include "ExpressionSource/lib/eslib"
+
+if (first()) {
+    Apps["Notepad",table]=table()
+    Apps["Notepad",table]["name",string]="Notepad"
+    Apps["Notepad",table]["author",string]="CNBuilder"
+    Apps["Notepad",table]["icon",table]=table()
+    Apps["Notepad",table]["icon",table]:pushVector4(vec4(25,255,255,1))
+    Apps["Notepad",table]["icon",table]:pushArray(array("box",vec2(0,0),vec2(50),"icon16/page_white_edit.png",0,vec4(255,255,255,255)))
+}
+
+if (Ram["apps",table]) {
+    if (click("apps","Notepad")&!fSApps()) {
+        if (!Ram["Notepad",table]) {
+            newApp("Notepad",20)
+            
+            local E = newEGP("Notepad")
+            EGP:egpBox(E,vec2(256),vec2(400,300))
+            EGP:egpColor(E,vec(30))
+            
+            local E = newButton("Notepad","close")
+            EGP:egpBox(E,vec2(437,123),vec2(25))
+            EGP:egpMaterial(E,"gui/html/stop")
+            
+            if (NoteFileData) {
+                local Data = NoteFileData:explode(toChar(10))
+                
+                local E = newEGP("Notepad")
+                EGP:egpText(E,NoteFileName+NoteFileType,vec2(70,111))
+                
+                for (I=1,clamp(Data:count(),0,12)) {
+                    NotepadLine[I,number] = newEGP("Notepad")
+                    
+                    local S = Data[I,string]
+                    
+                    EGP:egpText(NotepadLine[I,number],S,vec2(70,140+21*I-21))
+                    EGP:egpSize(NotepadLine[I,number],20)
+                }
+            }
+        }
+        else {hideApp("Notepad")}
+    }
+    
+    if (EGP:egpAlpha(newButton("Notepad","close"))>0) {
+        if (click("Notepad","close")) {hideApp("Notepad")}
+        
+        if (changed(NoteFileData)&NoteFileData) {
+            local Data = NoteFileData:explode(toChar(10))
+            
+            local E = newEGP("Notepad")
+            EGP:egpText(E,NoteFileName+"."+NoteFileType,vec2(70,111))
+            
+            for (I=1+NoteSilde,NoteSilde+clamp(Data:count(),0,12)) {   
+                local S =  Data[I,string]
+                
+                EGP:egpText(NotepadLine[I,number],S,vec2(70,140+21*I-21))
+                EGP:egpSize(NotepadLine[I,number],20)
+            }
+        }
+    }
+}

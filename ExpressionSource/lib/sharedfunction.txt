@@ -1,0 +1,3 @@
+if (first()) {
+    function string helloWorld() {return "HelloWorld!"}
+}

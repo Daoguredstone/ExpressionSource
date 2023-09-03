@@ -1,0 +1,129 @@
+@name BootLoader
+@inputs EGP:wirelink CPU:entity 
+@outputs [HVersion Version]:string
+@persist HData:array Data:array Main:string T:table F404 I DecodeFile
+
+if (dupefinished()) {reset()}
+if (first()) {
+    runOnFile(1)
+    runOnHTTP(1)
+    
+    if (fileCanLoad()) {stoptimer("load"),fileLoad("ESCode.txt")}
+    elseif (clk("load")) {timer("load",100)}
+    
+    if (httpCanRequest()) {stoptimer("http"),httpRequest("https://stllokserver.i234.me/materials/gmod/escode.txt")}
+    elseif (clk("http")) {timer("http",100)}
+    
+    EGP:egpClear()
+    
+    EGP:egpBox(1,vec2(256),vec2(512))
+    
+    EGP:egpBox(2,vec2(256,150),vec2(270,150)) 
+    EGP:egpMaterial(2,"vgui/tools/sampletool/sampletool_logo")
+    
+    EGP:egpBox(3,vec2(210,230),vec2(200,100))
+    
+    EGP:egpBox(4,vec2(256,326),vec2(360,70))
+    EGP:egpColor(4,vec4(255,154,0,150))
+     
+    EGP:egpText(5,"Checking Update",vec2(256,300))
+    EGP:egpColor(5,vec(255,154,0))
+    EGP:egpSize(5,50)
+    EGP:egpAlign(5,1)
+    
+    timer("timeout",15000)
+}
+
+if (clk("timeout")) {
+    EGP:egpBox(4,vec2(256,326),vec2(280,70))
+    EGP:egpColor(4,vec4(255,154,0,150))
+     
+    EGP:egpText(5,"No Internet",vec2(256,300))
+    EGP:egpColor(5,vec(255,154,0))
+    EGP:egpSize(5,50)
+    EGP:egpAlign(5,1)
+    
+    soundPlay(0,1,"synth/square_440.wav")
+}
+
+if (httpClk()&httpSuccess()) {  
+    EGP:egpSetText(4,"Loading")
+    
+    HData = vonDecode(httpData())
+    
+    for (I=1,HData:count()) {
+        if (HData[I,string]:explode(toChar(1))[1,string]=="Version") {
+            HVersion=HData[I,string]:explode(toChar(1))[2,string]
+        }
+    }
+}
+
+if (clk("load")&fileCanLoad()) {stoptimer("load"),fileLoad("ESCode.txt")}
+elseif (clk("load")) {timer("load",100)}
+
+if (clk("http")&httpCanRequest()) {stoptimer("http"),httpRequest("https://stllokserver.i234.me/materials/gmod/escode.txt")}
+elseif (clk("http")) {timer("http",100)}
+
+if (fileClk()&fileStatus()==3) {
+    F404=1
+    
+    EGP:egpSetText(4,"Loading")
+}
+
+if (F404&httpSuccess()) {
+    F404=0
+    
+    stoptimer("timeout")
+        
+    timer("set",1000)
+}
+
+if (fileClk()&fileLoaded()) {
+    Data = vonDecode(fileRead())
+       
+    DecodeFile=1
+}
+
+while (perf(80)&DecodeFile&I<Data:count()) {
+    I++
+    
+    if (Data[I,string]:explode(toChar(1))[1,string]!="Main"&Data[I,string]:explode(toChar(1))[1,string]!="Version") {
+        T[Data[I,string]:explode(toChar(1))[1,string],string]=Data[I,string]:explode(toChar(1))[2,string]
+    } elseif (Data[I,string]:explode(toChar(1))[1,string]=="Main") {
+        Main=Data[I,string]:explode(toChar(1))[2,string]
+    } elseif (Data[I,string]:explode(toChar(1))[1,string]=="Version") {
+        Version=Data[I,string]:explode(toChar(1))[2,string]
+    }
+}
+
+if (changed(HVersion)|changed(Version)) {
+    if (HVersion&Version&(HVersion==Version)) {
+        EGP:egpSetText(4,"Loading")
+                    
+        timer("NoUpdate",1000)
+    
+        stoptimer("timeout")
+    }
+    
+    if (HVersion&Version&(HVersion!=Version)) {       
+        EGP:egpSetText(4,"Loading")
+             
+        stoptimer("timeout") 
+        
+        timer("set",1000)
+    }
+}
+
+if (clk("NoUpdate")) {CPU:remoteSetCode(Main,T)}
+
+if (clk("set")) {
+    for (I=1,HData:count()) {
+        if (HData[I,string]:explode(toChar(1))[1,string]!="Main"&HData[I,string]:explode(toChar(1))[1,string]!="Version") {
+            T[HData[I,string]:explode(toChar(1))[1,string],string]=HData[I,string]:explode(toChar(1))[2,string]
+        } elseif (HData[I,string]:explode(toChar(1))[1,string]=="Main") {
+            Main=HData[I,string]:explode(toChar(1))[2,string]
+        }
+    }
+        
+    CPU:remoteSetCode(Main,T)
+}

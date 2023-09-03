@@ -1,0 +1,13 @@
+#include "ExpressionSource/lib/eslib"
+
+if (first()) {
+    Apps["bili",table]=table()
+    Apps["bili",table]["name",string]="Bilibili"
+    Apps["bili",table]["author",string]="CNBuilder"
+    Apps["bili",table]["icon",table]=table()
+    Apps["bili",table]["icon",table]:pushVector4(vec4(255,50,100,255))
+    Apps["bili",table]["icon",table]:pushArray(array("text","Bili",vec2(0,-10),20,0,vec4(255,255,255,100),1))
+    Apps["bili",table]["icon",table]:pushArray(array("rboxout",vec2(0,0),vec2(35,25),"",0,vec4(255,255,255,50),5))
+    Apps["bili",table]["icon",table]:pushArray(array("rbox",vec2(-10,-15),vec2(5,3),"",45,vec4(255,255,255,50),5))
+    Apps["bili",table]["icon",table]:pushArray(array("rbox",vec2(10,-15),vec2(5,3),"",-45,vec4(255,255,255,50),5))
+}

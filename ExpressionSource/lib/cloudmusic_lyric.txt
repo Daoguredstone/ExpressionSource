@@ -1,0 +1,129 @@
+@persist LyricData:table
+#include "ExpressionSource/lib/eslib"
+if (first()) {
+    function number gettime(S:string) {
+        local A = S:gmatch("%d+")
+        local Time=A[1,array][1,string]:toNumber()*60+A[2,array][1,string]:toNumber()+A[3,array][1,string]:toNumber()/1000
+        return Time    
+    }
+    
+    function lyric(ID:string) {
+        if (fileDataNumber("Cloud Music","Lyric")) {
+            LyricData["gcd",table]=table()
+            LyricData["fyd",table]=table()
+            LyricData["lyc",string]=""
+            LyricData["lycc",string]=""
+            timer("bz5",1500)
+              
+            httpRequest("http://music.163.com/api/song/lyric?os=pc&id="+ID+"&lv=-1&tv=-1") 
+        }
+    }
+    
+    function string getLyric() {
+        if (fileDataNumber("Cloud Music","Lyric")) {
+            return  (LyricData["lyc",string] ? LyricData["lyc",string] : "")+
+                    toChar(1)+ 
+                    (LyricData["lycc",string] ? LyricData["lycc",string] : "")
+        } else {return ""}
+    }
+    
+    LyricData["gcd",table]=table()
+    LyricData["fyd",table]=table()
+    LyricData["lyc",string]=""
+    LyricData["lycc",string]=""
+}
+
+if(!LyricData["Decoded",number]&httpSuccess()&LyricData["bz",number]==5){
+    local S = httpData()
+    local JSON=jsonDecode(S)
+    
+    LyricData["Decoded",number]=1
+    
+    if (!JSON:exists("nolyric")) {
+        LyricData["fy",number] = JSON:exists("tlyric")
+        
+        if(LyricData["fy",number]){
+            local GS=JSON["lrc",table]["lyric",string]
+            local FS=JSON["tlyric",table]["lyric",string]
+            LyricData["gcd",table]=GS:gmatch("%[(%d+:%d+[%.:]%d+)%]([^%[]*)")
+            LyricData["fyd",table]=FS:gmatch("%[(%d+:%d+[%.:]%d+)%]([^%[]*)")
+        }
+        else{
+            local GS=JSON["lrc",table]["lyric",string]
+            LyricData["gcd",table]=GS:gmatch("%[([^%}%d+:%d+[%.:]%d+[^%[]*)")
+        }
+              
+        LyricData["gcc",number]=1
+        LyricData["fyc",number]=1
+        LyricData["nexttimegc",number]=gettime(LyricData["gcd",table][LyricData["gcc",number],array][1,string])
+        LyricData["pretimegc",number]=0
+        
+        if(LyricData["fy",number]){
+            LyricData["pretimefy",number]=0
+            LyricData["nexttimefy",number]=gettime(LyricData["fyd",table][LyricData["fyc",number],array][1,string])
+        }
+        
+        LyricData["otime",number]=StreamRadio["Time",number]
+        LyricData["bz",number]=LyricData["bz",number]+1       
+    }
+}
+
+if (changed(StreamRadio["Play",number])) {
+    if (StreamRadio["Play",number]) {timer("clklyr",250)} else {stoptimer("clklyr")}
+}
+
+if (clk("clklyr")) {timer("clklyr",250)}
+if (clk("bz5")) {LyricData["bz",number]=5}
+        
+if(LyricData["bz",number]==6&StreamRadio["Play",number]==1 & opcounter()<maxquota()-2000 & clk("clklyr")){
+    if(StreamRadio["Time",number]>LyricData["nexttimegc",number] & LyricData["gcc",number]<= LyricData["gcd",table]:count() ){
+        LyricData["pretimegc",number]=LyricData["nexttimegc",number]
+        
+        LyricData["lyc",string]=LyricData["gcd",table][LyricData["gcc",number],array][2,string]
+        
+        LyricData["gcc",number]=LyricData["gcc",number]+1
+          
+        if(LyricData["gcc",number]>LyricData["gcd",table]:count()){
+            LyricData["nexttimegc",number]=9999    
+        }
+        else{
+            LyricData["nexttimegc",number]=gettime(LyricData["gcd",table][LyricData["gcc",number],array][1,string])
+        }
+    }
+    
+    if(StreamRadio["Time",number]<LyricData["pretimegc",number]){
+        LyricData["gcc",number]=LyricData["gcc",number]-1
+
+        LyricData["pretimegc",number]=gettime(LyricData["gcd",table][LyricData["gcc",number]-1,array][1,string])  
+        LyricData["nexttimegc",number]=gettime(LyricData["gcd",table][LyricData["gcc",number],array][1,string])
+        
+        LyricData["lyc",string]=LyricData["gcd",table][LyricData["gcc",number]-1,array][2,string]      
+    }
+    
+    if(StreamRadio["Time",number]>LyricData["nexttimefy",number] & LyricData["fyc",number]<=LyricData["fyd",table]:count() ){
+        LyricData["pretimefy",number]=LyricData["nexttimefy",number]
+        
+        LyricData["lycc",string]=LyricData["fyd",table][LyricData["fyc",number],array][2,string] 
+           
+        LyricData["fyc",number]=LyricData["fyc",number]+1
+        if(LyricData["fyc",number]>LyricData["fyd",table]:count()){       
+            LyricData["nexttimefy",number]=9999    
+        }
+        else{
+            LyricData["nexttimefy",number]=gettime(LyricData["fyd",table][LyricData["fyc",number],array][1,string])
+        }
+    }  
+     
+    if(StreamRadio["Time",number]<LyricData["pretimegc",number]){
+        LyricData["fyc",number]=LyricData["fyc",number]-1
+        LyricData["pretimefy",number]=gettime(LyricData["fyd",table][LyricData["fyc",number]-1,array][1,string])  
+        LyricData["nexttimefy",number]=gettime(LyricData["fyd",table][LyricData["fyc",number],array][1,string])
+        
+        LyricData["lycc",string]=LyricData["fyd",table][LyricData["fyc",number]-1,array][2,string]      
+    }
+}
+
+
+
+
+

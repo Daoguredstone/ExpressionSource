@@ -1,0 +1,317 @@
+@persist ExDelay ExInFold ExFileSelete [Path]:array ExButton:array
+#include "ExpressionSource/lib/eslib"
+##include "ExpressionSource/plugins/vertexshop"
+#include "ExpressionSource/plugins/text"
+#include "ExpressionSource/lib/cloudmusic_lyric"
+#include "ExpressionSource/plugins/cloudmusic"
+
+if (first()) {
+    Apps["explorer",table]=table()
+    Apps["explorer",table]["name",string]="Explorer"
+    Apps["explorer",table]["author",string]="CNBuilder"
+    Apps["explorer",table]["icon",table]=table()
+    Apps["explorer",table]["icon",table]:pushVector4(vec4(25,255,255,1))
+    Apps["explorer",table]["icon",table]:pushArray(array("box",vec2(0,0),vec2(60),"icon16/folder.png",0,vec4(255,255,255,255)))
+    
+    function openExplorer() {
+        if (!Ram["Explorer",table]) {
+            newApp("Explorer",50)
+            
+            data("Explorer","page",1)
+            
+            local E = newEGP("Explorer")
+            EGP:egpBox(E,vec2(256),vec2(400,300))
+            EGP:egpColor(E,vec(30))
+            
+            local E = newEGP("Explorer")
+            EGP:egpBox(E,vec2(256,100),vec2(400,30))
+            EGP:egpColor(E,vec(40))
+            
+            local E = newEGP("Explorer")
+            EGP:egpText(E,"File Explorer",vec2(60,87))
+            EGP:egpSize(E,25)
+
+            local E = newButton("Explorer","Prev")
+            EGP:egpBox(E,vec2(410,100),vec2(25))
+            EGP:egpMaterial(E,"icon16/folder_delete.png")
+            
+            local E = newButton("Explorer","close")
+            EGP:egpBox(E,vec2(440,100),vec2(25))
+            EGP:egpMaterial(E,"gui/html/stop")
+            
+            local E = newButton("Explorer","local")
+            EGP:egpBox(E,vec2(100,150),vec2(60))
+            EGP:egpMaterial(E,"icon16/folder.png")
+            
+            local E = newEGP("Explorer")
+            EGP:egpText(E,"Local Store",vec2(100,175))
+            EGP:egpAlign(E,1)
+            EGP:egpSize(E,12)
+            
+            local E = newButton("Explorer","DeleteFile")
+            EGP:egpBox(E,vec2(70,390),vec2(25))
+            EGP:egpMaterial(E,"icon16/page_delete.png")
+            
+            local E = newButton("Explorer","PrevPage")
+            EGP:egpBox(E,vec2(210,390),vec2(25))
+            EGP:egpMaterial(E,"icon16/arrow_left.png")
+            
+            local E = newButton("Explorer","NextPage")
+            EGP:egpBox(E,vec2(310,390),vec2(25))
+            EGP:egpMaterial(E,"icon16/arrow_right.png")
+            
+            local E = newEGP("Explorer","Page")
+            EGP:egpText(E,"1/"+10,vec2(256,380))
+            EGP:egpAlign(E,1)
+            EGP:egpSize(E,20)
+        }
+        else {hideApp("Explorer"),hidePop("Explorer")}
+    }
+    
+    function refreshExplorer() {
+        for (I=1,15) {
+            local E = 0
+            if (I>5) {E=5}
+            if (I>10) {E=10}
+            
+            if (ExButton:count()<30) {
+                ExButton[I,number]=newButton("Explorer","file"+I)
+                ExButton[I+15,number]=newEGP("Explorer")
+            }
+                   
+            local FileName = Path[I+(15*(dataNumber("Explorer","page")-1)),string]:explode(toChar(0))[2,string]
+            local FileType = Path[I+(15*(dataNumber("Explorer","page")-1)),string]:explode(toChar(0))[3,string]:explode(toChar(1))[2,string]
+            local FileIcon = Path[I+(15*(dataNumber("Explorer","page")-1)),string]:explode(toChar(0))[3,string]:explode(toChar(1))[3,string]:explode(toChar(2))[2,string]
+            
+            local SizeData = Path[I+(15*(dataNumber("Explorer","page")-1)),string]:explode(toChar(0))[3,string]:explode(toChar(1))[3,string]:explode(toChar(2))[3,string]:explode(toChar(3))[2,string]
+            local IconSize = vec2(SizeData:explode(",")[1,string]:toNumber(),SizeData:explode(",")[2,string]:toNumber())
+        
+            local Pos = vec2(100+(I-E-1)*76,150+85*int(I/5)-((I==5|I==10|I==15)? 85 : 0))
+
+            if (Path[I+(15*(dataNumber("Explorer","page")-1)),string]) {
+                EGP:egpBox(ExButton[I,number],Pos,(IconSize? IconSize : vec2(60)))
+                EGP:egpText(ExButton[I+15,number],FileName,Pos+vec2(0,30))
+                EGP:egpSize(ExButton[I+15,number],12)
+                EGP:egpAlign(ExButton[I+15,number],1)
+                EGP:egpAlpha(ExButton[I,number],255)
+                EGP:egpAlpha(ExButton[I+15,number],255)
+            }
+            else {EGP:egpAlpha(ExButton[I,number],0),EGP:egpAlpha(ExButton[I+15,number],0)}
+                          
+            EGP:egpMaterial(ExButton[I,number],"icon16/page_white.png")
+        
+            if (!FileIcon) {
+                switch (FileType) {
+                    case "umf", EGP:egpMaterial(ExButton[I,number],"icon16/music.png") break
+                    case "uif", EGP:egpMaterial(ExButton[I,number],"icon16/image_link.png") break
+                    case "web", EGP:egpMaterial(ExButton[I,number],"icon16/world_link.png") break
+                    case "vtx", EGP:egpMaterial(ExButton[I,number],"icon16/shape_handles.png") break
+                    case "txt", EGP:egpMaterial(ExButton[I,number],"icon16/page_white_text.png") break
+                    case "mls", EGP:egpMaterial(ExButton[I,number],"icon16/text_padding_right.png") break
+                }
+            } else {EGP:egpMaterial(ExButton[I,number],FileIcon)}
+        }
+        
+        EGP:egpSetText(egp("Explorer","Page"),dataNumber("Explorer","page")+"/"+10)
+    }
+    
+    function callTextEdit(FileName:string,FileType:string,FileData:string) {
+        if (!Ram["Notepad",table]) {
+            newApp("Notepad",20)
+            
+            NoteFileName=FileName
+            NoteFileType=FileType
+            NoteFileData=FileData
+            
+            local E = newEGP("Notepad")
+            EGP:egpBox(E,vec2(256),vec2(400,300))
+            EGP:egpColor(E,vec(30))
+            
+            local E = newButton("Notepad","close")
+            EGP:egpBox(E,vec2(437,123),vec2(25))
+            EGP:egpMaterial(E,"gui/html/stop")
+            
+            if (NoteFileData) {
+                local Data = NoteFileData:explode(toChar(10))
+                
+                local E = newEGP("Notepad")
+                EGP:egpText(E,NoteFileName+"."+NoteFileType,vec2(70,111))
+                
+                for (I=1,clamp(Data:count(),0,12)) {NotepadLine[I,number] = newEGP("Notepad")}
+            }
+        }
+        else {
+            NoteFileName=FileName
+            NoteFileType=FileType
+            NoteFileData=FileData
+            
+            hideApp("Notepad")
+        }
+    }
+    
+    function play(AR:array,S:string) {
+        data("Cloud Music","SongList",AR)
+        data("Cloud Music","SongListName",S)  
+        
+        local AR = dataArray("Cloud Music","SongList")
+        local S = AR[randint(1,AR:count()),string]
+        local R = S:explode(";")[1,string]:toUnicodeByte(1,clamp(S:explode(";")[1,string]:unicodeLength(),1,25))
+        
+        StreamRadio["Time",number]=0
+        StreamRadio["Play",number]=0
+        StreamRadio["Stream URL",string]=S:explode(";")[2,string]
+        
+        lyric(S:explode(";")[2,string]:explode("=")[2,string]:replace(".mp3",""))
+        
+        EGP:egpSetText(egp("Cloud Music","Name"),dataString("Cloud Music","SongListName")+" : "+toUnicodeChar(R)) 
+        
+        timer("playradio",300)
+        timer("cndelay",500)
+                 
+        data("Cloud Music","delay",1)
+    }
+}
+
+if (Ram["apps",table]) {
+    if (click("apps","Explorer")&!fSApps()) {
+        openExplorer()
+    }
+    
+    if (Ram["Explorer",table]&click("Explorer","close")) {hideApp("Explorer"),hidePop("Explorer")}
+    
+    if (Ram["Explorer",table]&EGP:egpAlpha(newButton("Explorer","close"))>0) {
+        if (click("Explorer","Prev")) {
+            if (ExInFold>0) {
+                ExInFold=ExInFold-1
+                
+                if (ExInFold==1) {
+                }
+                if (ExInFold==0) {
+                    EGP:egpAlpha(newButton("Explorer","local"),255)
+                    EGP:egpAlpha(newButton("Explorer","local")+1,255)
+                    
+                    for (I=1,ExButton:count()) {
+                        EGP:egpAlpha(ExButton[I,number],0)
+                        EGP:egpAlpha(ExButton[I+15,number],0)
+                    }
+                    
+                    Path=array()
+                }
+            }
+        }
+        if (click("Explorer","local")) {
+            Path=HardDrive["Memory",array]:clone()
+            ExInFold=1
+            
+            EGP:egpAlpha(newButton("Explorer","local"),0)
+            EGP:egpAlpha(newButton("Explorer","local")+1,0)
+            
+            refreshExplorer()
+        }
+        
+        if (Path) {
+            if (!popVisible("Explorer")&EGP["User",entity]) {
+                for (I=1,(Path:count()>15? 15 : Path:count())) {
+                    if (click("Explorer","file"+I)) {  
+                        local FileName = Path[I+(15*(dataNumber("Explorer","page")-1)),string]:explode(toChar(0))[2,string]
+                        local FileType = Path[I+(15*(dataNumber("Explorer","page")-1)),string]:explode(toChar(0))[3,string]:explode(toChar(1))[2,string]
+                        local FileData = Path[I+(15*(dataNumber("Explorer","page")-1)),string]:explode(toChar(0))[3,string]:explode(toChar(1))[3,string]:explode(toChar(2))[1,string]
+                                     
+                        switch (FileType) {
+                            case "umf", playUrl(FileData),lyric(FileData:explode("=")[2,string]:replace(".mp3","")) break
+                            case "uif", if (!ExDelay) {ExDelay=1,timer("ExResetDelay",1000),concmd("playx_uri "+toChar(34)+FileData+toChar(34)),concmd("playx_provider Image"),concmd("playx_gui_open")} break
+                            case "web", if (!ExDelay) {ExDelay=1,timer("ExResetDelay",1000),concmd("playx_uri "+toChar(34)+FileData+toChar(34)),concmd("playx_provider StaticWeb"),concmd("playx_gui_open")} break
+#[                            case "vtx", if (!Ram["VertexShop",table]) {
+                                VxSLayers[1,array]=vonDecode(FileData)
+                                
+                                newApp("VertexShop",100,1)
+                                
+                                local E = newEGP("VertexShop")
+                                EGP:egpBox(E,vec2(256,243),vec2(512,480))
+                                EGP:egpColor(E,vec(50))
+                                
+                                local E = newEGP("VertexShop")
+                                EGP:egpBox(E,vec2(256,15),vec2(512,30))
+                                EGP:egpColor(E,vec(70))
+                                
+                                local E = newButton("VertexShop","close")
+                                EGP:egpBox(E,vec2(495,15),vec2(25))
+                                EGP:egpMaterial(E,"gui/html/stop")
+                                
+                                local E = newButton("VertexShop","new")
+                                EGP:egpBox(E,vec2(20,15),vec2(25))
+                                EGP:egpMaterial(E,"icon16/picture_add.png")
+                                
+                                local E = newButton("VertexShop","save")
+                                EGP:egpBox(E,vec2(50,15),vec2(25))
+                                EGP:egpMaterial(E,"icon16/picture_save.png")
+                                
+                                for (I=1,50) {VxSEGP[I,number]=newEGP("VertexShop")}
+                            }
+                            else {hideApp("VertexShop"),VxSLayers[1,array]=vonDecode(FileData)} break]#
+                            case "txt", callTextEdit(FileName,FileType,FileData) break
+                            case "mls", 
+                                local AR = vonDecode(FileData)
+                                
+                                callCloudMusic()
+                                play(AR,FileName) 
+                            break
+                        }
+                    }
+                }
+            }
+                   
+            if (click("Explorer","DeleteFile")) {
+                pop("Explorer","Selete The File")
+                ExFileSelete=0
+            }
+            
+            if (Path:count()>15) {
+                if (click("Explorer","PrevPage")) {
+                    if (dataNumber("Explorer","page")>1) {
+                        data("Explorer","page",dataNumber("Explorer","page")-1)
+                        refreshExplorer()
+                    }
+                }
+            
+                if (click("Explorer","NextPage")) {
+                    if (dataNumber("Explorer","page")<10) {
+                        data("Explorer","page",dataNumber("Explorer","page")+1)
+                        refreshExplorer()
+                    }
+                }
+            }
+
+            if (popTitle("Explorer")=="Selete The File") {
+                for (I=1,(Path:count()>15? 15 : Path:count())){
+                    if (click("Explorer","file"+I)) {
+                        ExFileSelete = I+(15*(dataNumber("Explorer","page")-1))
+                        local Name = Path[I+(15*(dataNumber("Explorer","page")-1)),string]:explode(toChar(0))[2,string]
+                        
+                        pop("Explorer","Delete "+Name+" ?")
+                    }
+                }
+            } 
+                    
+            if (popVisible("Explorer")) {
+                if (click("Explorer","popno")) {hidePop("Explorer")}
+                
+                if (click("Explorer","popyes")) {
+                    if (popTitle("Explorer"):explode(" ")[1,string]=="Delete") {     
+                        local A = HardDrive["Memory",array]:clone()
+                        A:removeString(ExFileSelete)
+                        HardDrive:entity():createWire(entity(),"Data","Data")
+                        Data=A
+                                      
+                        hidePop("Explorer")
+                        refreshExplorer()
+                    } 
+                }
+            }
+            
+            if (changed(Keyboard["Text",string])) {popUpdateIn("Explorer")}
+        }
+        
+        if (clk("ExResetDelay")) {ExDelay=0}
+    }
+}

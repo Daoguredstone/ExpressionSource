@@ -1,0 +1,81 @@
+@persist
+#include "ExpressionSource/lib/eslib"
+
+if (first()) {
+    function refreshAboutme() {
+        local E = newButton("Aboutme","PP")
+        EGP:egpBox(E,vec2(110,160),vec2(78))
+        if (!Profile["Account",table]["PP",string]) {EGP:egpMaterial(E,"vgui/avatar_default")}
+        else {EGP:egpMaterial(E,Profile["Account",table]["PP",string])}
+            
+        local E = newEGP("Aboutme","Name")
+        EGP:egpText(E,Profile["Account",table]["Name",string],vec2(180,120))
+        EGP:egpSize(E,30)
+    
+        local E = newEGP("Aboutme","Age")
+        EGP:egpText(E,"年龄 : "+Profile["Account",table]["Age",string],vec2(180,155))
+        EGP:egpSize(E,20)
+        
+        local E = newEGP("Aboutme","Gender")
+        EGP:egpText(E,"性别 : "+Profile["Account",table]["Gender",string],vec2(180,180))
+        EGP:egpSize(E,20)
+    }
+}
+
+if (Ram["apps",table]) {
+    if (click("menu","AboutMe")) {
+        if (!Ram["Aboutme",table]) {
+            newApp("Aboutme",30,1)
+            
+            local E = newEGP("Aboutme")
+            EGP:egpBox(E,vec2(256),vec2(400,300))
+            EGP:egpColor(E,vec(30))
+            
+            refreshAboutme()
+            
+            local E = newEGP("Aboutme")
+            EGP:egpBoxOutline(E,vec2(0),vec2(80))
+            EGP:egpParent(E,newButton("Aboutme","PP"))
+            EGP:egpSize(E,2)
+            
+            local E = newButton("Aboutme","Name")
+            EGP:egpBox(E,vec2(165,135),vec2(25))
+            EGP:egpMaterial(E,"icon16/pencil.png")
+            
+            local E = newButton("Aboutme","Age")
+            EGP:egpBox(E,vec2(165,165),vec2(20))
+            EGP:egpMaterial(E,"icon16/pencil.png")
+            
+            local E = newButton("Aboutme","Gender")
+            EGP:egpBox(E,vec2(165,190),vec2(20))
+            EGP:egpMaterial(E,"icon16/pencil.png")
+        }
+        else {hideApp("Aboutme"),hidePop("Aboutme")}
+    }
+    
+    if (Ram["Aboutme",table]&EGP:egpAlpha(newButton("Aboutme","PP"))>0) {
+        if (!popVisible("Aboutme")) {
+            if (click("Aboutme","Name")) {popIn("Aboutme","Set your Name")}
+            if (click("Aboutme","Age")) {popIn("Aboutme","Set your Age")}
+            if (click("Aboutme","Gender")) {popIn("Aboutme","Set your Gender")}
+            if (click("Aboutme","PP")) {popIn("Aboutme","Set your Picture")}
+        }
+        
+        if (popVisible("Aboutme")) {
+            if (click("Aboutme","popno")) {hidePop("Aboutme")}
+            
+            if (click("Aboutme","popyes")) {
+                switch (popTitle("Aboutme")) {
+                    case "Set your Name",Profile["Account",table]["Name",string]=Keyboard["Text",string],hidePop("Aboutme") break
+                    case "Set your Age",Profile["Account",table]["Age",string]=Keyboard["Text",string],hidePop("Aboutme") break
+                    case "Set your Gender",Profile["Account",table]["Gender",string]=Keyboard["Text",string],hidePop("Aboutme") break
+                    case "Set your Picture",Profile["Account",table]["PP",string]=Keyboard["Text",string],hidePop("Aboutme") break
+                } 
+                if (fileCanWrite()) {fileWrite("eiicfg.txt",jsonEncode(Profile))}
+                refreshAboutme()
+            }
+        }
+        
+        if (changed(Keyboard["Text",string])) {popUpdateIn("Aboutme")}
+    }
+}

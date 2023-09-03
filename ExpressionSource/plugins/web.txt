@@ -1,0 +1,221 @@
+@persist WBGlobal WBText WebDelay
+#include "ExpressionSource/lib/eslib"
+
+if (first()) {
+    Apps["web",table]=table()
+    Apps["web",table]["name",string]="Web Browser"
+    Apps["web",table]["author",string]="CNBuilder"
+    Apps["web",table]["icon",table]=table()
+    Apps["web",table]["icon",table]:pushVector4(vec4(255,255,255,255))
+    Apps["web",table]["icon",table]:pushArray(array("box",vec2(0,0),vec2(35),"icon16/world.png",0,vec4(255,255,255,255)))
+    
+    function refreshHistory() {
+        for (I=1,12) {    
+            local A = dataTable("Web Browser","History")
+            
+            local S = A[I+dataNumber("Web Browser","page")*12,string]
+            local S1 = S:explode(toChar(1))[1,string]
+            local S2 = S:explode(toChar(1))[2,string]
+            local S3 = S:explode(toChar(1))[3,string]
+            
+            local Overflow = S3:unicodeLength()>=27            
+            local S3 = uniSub(S:explode(toChar(1))[3,string],1,27)+(Overflow? "..." : "")            
+      
+            local S = S1+S2+S3
+            local E = egp("Web Browser","ListText"+I)
+            EGP:egpSetText(E,S)           
+        }
+    }
+    
+    function webSearch(S:string,U:entity) {
+        if (!WebDelay) {
+            if (S:find("http://")|S:find("https://")|S:find("www.")) {
+                if (S:find("http://")|S:find("https://")) {concmd("playx_uri "+toChar(34)+S+toChar(34))}
+                else {concmd("playx_uri "+toChar(34)+"https://"+S+toChar(34))}
+                
+                concmd("playx_provider StaticWeb")
+                concmd("playx_gui_open")
+            } else {
+                if (!WBGlobal) {
+                    concmd("playx_uri "+toChar(34)+"https://bing.com/search?q="+httpUrlEncode(S)+"&FORM=BESBTB"+toChar(34))
+                    concmd("playx_provider StaticWeb")
+                    concmd("playx_gui_open")
+                }
+                else {
+                    concmd("playx_uri "+toChar(34)+"https://bing.com/images/search?q="+httpUrlEncode(S)+"&FORM=BESBTB"+toChar(34))
+                    concmd("playx_provider StaticWeb")
+                    concmd("playx_gui_open")
+                }
+            }
+            
+            local Image = (WBGlobal? "[I]" : "")
+            local A = dataTable("Web Browser","History")
+            A:pushString(Image+"["+nowTimeSimple()+"]"+toChar(1)+U:name()+":"+toChar(1)+S)
+            
+            fileData("Web Browser","History",dataTable("Web Browser","History"))
+            
+            refreshHistory()
+            
+            WebDelay=1
+            timer("WebDelay",1000)
+        }
+    }
+    
+    function webOpen(S:string,U:entity) {
+        if (!WebDelay) {
+            if (S:find("http://")|S:find("https://")) {concmd("playx_uri "+toChar(34)+S+toChar(34))}
+            else {concmd("playx_uri "+toChar(34)+"https://"+S+toChar(34))}
+            
+            concmd("playx_provider StaticWeb")
+            concmd("playx_gui_open")
+            
+            WebDelay=1
+            timer("WebDelay",500)
+            
+            local A = dataTable("Web Browser","History")
+            A:pushString("[Page]["+nowTimeSimple()+"]"+toChar(1)+U:name()+":"+toChar(1)+S)
+            
+            fileData("Web Browser","History",dataTable("Web Browser","History"))
+            
+            refreshHistory()
+        }
+    }
+}
+
+if (Ram["apps",table]) {
+    if (click("apps","Web Browser")&!fSApps()) {
+        if (!Ram["Web Browser",table]) {
+            newApp("Web Browser",55)
+            
+            local E = newEGP("Web Browser")
+            EGP:egpBox(E,vec2(256,256),vec2(500,400))
+            EGP:egpColor(E,vec(30))
+            
+            local E = newEGP("Web Browser")
+            EGP:egpRoundedBox(E,vec2(256,70),vec2(500,30))
+            EGP:egpRadius(E,5)
+            EGP:egpColor(E,vec(35,255,35))
+            
+            local E = newEGP("Web Browser")
+            EGP:egpText(E,"Web Browser",vec2(10,55))
+            EGP:egpSize(E,30)
+            
+            local E = newButton("Web Browser","close")
+            EGP:egpBox(E,vec2(490,70),vec2(25))
+            EGP:egpMaterial(E,"gui/html/stop")
+            
+            local E = newEGP("Web Browser")
+            EGP:egpRoundedBox(E,vec2(110,105),vec2(200,30))
+            EGP:egpRadius(E,5)
+            EGP:egpColor(E,vec(40))
+            
+            WBText = newEGP("Web Browser")
+            EGP:egpText(WBText,"",vec2(15,91))
+            EGP:egpSize(WBText,25)
+            
+            newVButton("Web Browser","search",vec2(260,105),vec2(90,30),"Search",vec(35))
+            newVButton("Web Browser","gsearch",vec2(354,105),vec2(90,30),"Image",(WBGlobal? vec(25,150,5) : vec(35)))
+            
+            local E = newButton("Web Browser","open")
+            EGP:egpBox(E,vec2(417,105),vec2(30))
+            EGP:egpMaterial(E,"icon16/world_go.png")
+     
+            for (I=1,12) {
+                local E = newButton("Web Browser","List"+I)
+                EGP:egpBox(E,vec2(256,118+I*25),vec2(500,25))
+                if (I==1|I==3|I==5|I==7|I==9|I==11) {
+                    EGP:egpColor(E,vec(30))
+                } else {
+                    EGP:egpColor(E,vec(35))
+                }
+                  
+                local E = newEGP("Web Browser","ListText"+I)
+                EGP:egpText(E,fileDataTable("Web Browser","History")[I,string]:replace(toChar(1),""),vec2(10,108+I*25))
+            }
+            
+            local E = newEGP("Web Browser")
+            EGP:egpBox(E,vec2(256,130),vec2(500,1))
+            EGP:egpColor(E,vec(50))
+            
+            local E = newEGP("Web Browser")
+            EGP:egpBox(E,vec2(256,150+40*7),vec2(500,1))
+            EGP:egpColor(E,vec(50))
+            
+            local E = newButton("Web Browser","prevPage")
+            EGP:egpBox(E,vec2(256-30,442),vec2(25))
+            EGP:egpMaterial(E,"gui/html/back")
+
+            local E = newButton("Web Browser","nextPage")
+            EGP:egpBox(E,vec2(256+30,442),vec2(25))
+            EGP:egpMaterial(E,"gui/html/forward")
+            
+            E = newEGP("Web Browser","page")
+            EGP:egpText(E,"1/10",vec2(256,433))
+            EGP:egpAlign(E,1)
+            
+            local E = newButton("Web Browser","clear")
+            EGP:egpBox(E,vec2(20,442),vec2(20))
+            EGP:egpMaterial(E,"icon16/bin_empty.png")
+            
+            local A = fileDataTable("Web Browser","History")
+            data("Web Browser","History",(A? A : table()))
+        }
+        else {hideApp("Web Browser")}
+    }
+
+    if (EGP:egpAlpha(WBText)>0) {
+        if (click("Web Browser","close")) {hideApp("Web Browser")}
+        if (!WebDelay&click("Web Browser","open")) {
+            webOpen(Keyboard["Text",string],Keyboard["User",entity])
+        }
+        
+        if (click("Web Browser","gsearch")) {WBGlobal=!WBGlobal,newVButton("Web Browser","gsearch",vec2(354,105),vec2(90,30),"Image",(WBGlobal? vec(35,150,35) : vec(35)))}
+        if (!WebDelay&click("Web Browser","search")) {
+            webSearch(Keyboard["Text",string],Keyboard["User",entity])
+        }
+        
+        if (changed(Keyboard["Text",string])) {
+            local R = Keyboard["Text",string]:toUnicodeByte(1,clamp(Keyboard["Text",string]:unicodeLength(),1,14))
+            EGP:egpSetText(WBText,toUnicodeChar(R))
+        }
+        
+        if (EGP["User",entity]) {
+            local CPG = dataNumber("Web Browser","page")
+            
+            if (click("Web Browser","nextPage")&CPG<10) {CPG=CPG+1,data("Web Browser","page",CPG)}
+            if (click("Web Browser","prevPage")&CPG>0) {CPG=CPG-1,data("Web Browser","page",CPG)}
+            
+            if (changed(CPG)) {
+                EGP:egpSetText(egp("Web Browser","page"),(CPG+1)+"/10")
+                
+                refreshHistory()
+            }
+            
+            for (I=1,12) {
+                if (click("Web Browser","List"+I)) {
+                    local A = dataTable("Web Browser","History")                   
+            
+                    if (A[I+dataNumber("Web Browser","page")*12,string]) {
+                        local S = A[I+dataNumber("Web Browser","page")*12,string]
+                        local S1 = S:explode(toChar(1))[1,string]
+                        local S2 = S:explode(toChar(1))[3,string]
+                        
+                        if (S1:find("[I]")) {if (!WBGlobal) {WBGlobal=1},webSearch(S2,EGP["User",entity])} 
+                        elseif (!S1:find("[Page]")) {if (WBGlobal) {WBGlobal=0},webSearch(S2,EGP["User",entity])}
+                        else   {webOpen(S2,EGP["User",entity])}
+                    } 
+                }
+            }
+        }
+        
+        if (click("Web Browser","clear")) {
+            data("Web Browser","History",table())
+            fileData("Web Browser","History",table())
+            
+            refreshHistory()
+        }
+    }
+    
+    if (clk("WebDelay")) {WebDelay=0}
+}
+

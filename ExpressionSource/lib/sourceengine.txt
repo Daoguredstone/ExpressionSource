@@ -1,0 +1,14 @@
+@name SourceEngine [WIP]
+#include "ExpressionSource/lib/eslib"
+
+#[
+    GameEngine For ExpressionSource
+    
+    Made by 稻谷MCUT
+]#
+
+if (first()) {
+    function table:addHealth(N) {
+        This[1,number] = clamp(This[1,number] + N,0,This[2,number])
+    }
+}
